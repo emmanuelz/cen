@@ -19,7 +19,7 @@ public class GameBoardView extends JPanel {
 
 	public GameBoardView() {
 		super();
-		Dimension d = new Dimension(320, 640);
+		Dimension d = new Dimension(640, 1280);
 		setPreferredSize(d);
 		painter = new GameBoardPainter();
 		GameBoard2014 gameBoard = new GameBoard2014();

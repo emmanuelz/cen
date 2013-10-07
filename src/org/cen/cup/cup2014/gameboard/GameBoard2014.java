@@ -4,17 +4,21 @@ import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.cen.cup.cup2014.gameboard.elements.Basket;
+import org.cen.cup.cup2014.gameboard.elements.Beacon;
 import org.cen.cup.cup2014.gameboard.elements.CentralFireplace;
 import org.cen.cup.cup2014.gameboard.elements.Fire;
 import org.cen.cup.cup2014.gameboard.elements.FixedTorch;
 import org.cen.cup.cup2014.gameboard.elements.FrescoPath;
 import org.cen.cup.cup2014.gameboard.elements.MobileTorch;
 import org.cen.cup.cup2014.gameboard.elements.SideFireplace;
+import org.cen.cup.cup2014.gameboard.elements.StartArea;
 import org.cen.cup.cup2014.gameboard.elements.Tree;
 import org.cen.ui.gameboard.AbstractGameBoard;
+import org.cen.ui.gameboard.GameBoardElementsComparator;
 import org.cen.ui.gameboard.IGameBoardElement;
 import org.cen.ui.gameboard.RALColor;
 import org.cen.ui.gameboard.elements.Board;
@@ -24,10 +28,9 @@ import org.cen.ui.gameboard.elements.Border;
  * Gameboard for the cup 2012.
  */
 public class GameBoard2014 extends AbstractGameBoard {
+	public static final double BOARD_WIDTH = 2000d;
 
 	public static final double BOARD_HEIGHT = 3000d;
-
-	public static final double BOARD_WIDTH = 2000d;
 
 	public static final double BOARD_MIDDLE_HEIGHT = BOARD_HEIGHT / 2.0d;
 
@@ -35,19 +38,26 @@ public class GameBoard2014 extends AbstractGameBoard {
 
 	public static final double BORDER_WIDTH = 22d;
 
+	public static double symetrize(boolean symetric, double value) {
+		if (symetric) {
+			value = BOARD_HEIGHT - value;
+		}
+		return value;
+	}
+
+	/** Color of board. */
+	private final Color COLOR_BOARD = RALColor.RAL_6018;
+
 	private final List<IGameBoardElement> elements;
 
 	private final Rectangle2D gameplayBounds;
 
 	private final Rectangle2D visibleBounds;
 
-	/** Color of board. */
-	private final Color COLOR_BOARD = RALColor.RAL_6018;
-
 	public GameBoard2014() {
 		super();
 		gameplayBounds = new Rectangle2D.Double(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
-		visibleBounds = new Rectangle2D.Double(-100, -150, BOARD_WIDTH + 350, BOARD_HEIGHT + 400);
+		visibleBounds = new Rectangle2D.Double(-150, -150, BOARD_WIDTH + 400, BOARD_HEIGHT + 400);
 		elements = new ArrayList<IGameBoardElement>();
 		addElements();
 	}
@@ -89,6 +99,29 @@ public class GameBoard2014 extends AbstractGameBoard {
 
 		elements.add(new FrescoPath("fresco-red", new Point2D.Double(0, 0), false));
 		elements.add(new FrescoPath("fresco-yellow", new Point2D.Double(0, 0), true));
+
+		elements.add(new StartArea("start-red", new Point2D.Double(0, 0), RALColor.RAL_3020, false));
+		elements.add(new StartArea("start-yellow", new Point2D.Double(0, 0), RALColor.RAL_1023, true));
+
+		elements.add(new Border("border", 700, BORDER_WIDTH, RALColor.RAL_3020, new Point2D.Double(0, -BORDER_WIDTH), 0, 3));
+		elements.add(new Border("border", 700, BORDER_WIDTH, RALColor.RAL_1023, new Point2D.Double(0, BOARD_HEIGHT), 0, 3));
+		elements.add(new Border("border", BOARD_WIDTH - 700 + BORDER_WIDTH, BORDER_WIDTH, Color.WHITE, new Point2D.Double(700, -BORDER_WIDTH), 0, 3));
+		elements.add(new Border("border", BOARD_WIDTH - 700 + BORDER_WIDTH, BORDER_WIDTH, Color.WHITE, new Point2D.Double(700, BOARD_HEIGHT), 0, 3));
+		elements.add(new Border("border", BORDER_WIDTH, 400 + BORDER_WIDTH, RALColor.RAL_3020, new Point2D.Double(-BORDER_WIDTH, -BORDER_WIDTH), 0, 3));
+		elements.add(new Border("border", BORDER_WIDTH, 400 + BORDER_WIDTH, RALColor.RAL_1023, new Point2D.Double(-BORDER_WIDTH, BOARD_HEIGHT - 400), 0, 3));
+		elements.add(new Border("border", BORDER_WIDTH, 800, Color.WHITE, new Point2D.Double(-BORDER_WIDTH, 1100), 0, 3));
+		elements.add(new Border("border", BORDER_WIDTH, 700, RALColor.RAL_8002, new Point2D.Double(-BORDER_WIDTH, 400), 0, 3));
+		elements.add(new Border("border", BORDER_WIDTH, 700, RALColor.RAL_8002, new Point2D.Double(-BORDER_WIDTH, 1900), 0, 3));
+
+		elements.add(new Beacon("beacon-red-1", new Point2D.Double(-62, -62), RALColor.RAL_3020));
+		elements.add(new Beacon("beacon-red-2", new Point2D.Double(BOARD_WIDTH + 62, -62), RALColor.RAL_3020));
+		elements.add(new Beacon("beacon-red-3", new Point2D.Double(BOARD_WIDTH / 2, BOARD_HEIGHT + 62), RALColor.RAL_3020));
+
+		elements.add(new Beacon("beacon-yellow-1", new Point2D.Double(-62, BOARD_HEIGHT + 62), RALColor.RAL_1023));
+		elements.add(new Beacon("beacon-yellow-2", new Point2D.Double(BOARD_WIDTH + 62, BOARD_HEIGHT + 62), RALColor.RAL_1023));
+		elements.add(new Beacon("beacon-yellow-3", new Point2D.Double(BOARD_WIDTH / 2, -62), RALColor.RAL_1023));
+
+		Collections.sort(elements, new GameBoardElementsComparator());
 	}
 
 	private void addOpponentLocation(Point2D coordinates) {

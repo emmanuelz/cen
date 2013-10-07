@@ -16,10 +16,10 @@ public class FrescoPath extends AbstractGameBoardElement {
 
 	public FrescoPath(String name, Point2D position, boolean symetric) {
 		super(name, position, 0, 2);
-		path.moveTo(600, symetrize(symetric, 0));
-		path.lineTo(600, symetrize(symetric, 1200));
-		path.quadTo(600, symetrize(symetric, 1350), 450, symetrize(symetric, 1350));
-		path.lineTo(0, symetrize(symetric, 1350));
+		path.moveTo(600, GameBoard2014.symetrize(symetric, 0));
+		path.lineTo(600, GameBoard2014.symetrize(symetric, 1200));
+		path.quadTo(600, GameBoard2014.symetrize(symetric, 1350), 450, GameBoard2014.symetrize(symetric, 1350));
+		path.lineTo(0, GameBoard2014.symetrize(symetric, 1350));
 	}
 
 	@Override
@@ -27,12 +27,5 @@ public class FrescoPath extends AbstractGameBoardElement {
 		g.setColor(Color.BLACK);
 		g.setStroke(stroke);
 		g.draw(path);
-	}
-
-	private double symetrize(boolean symetric, double value) {
-		if (symetric) {
-			value = GameBoard2014.BOARD_HEIGHT - value;
-		}
-		return value;
 	}
 }
