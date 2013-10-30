@@ -17,6 +17,10 @@ public class Main {
 
 	public Main() {
 		super();
+		initGUI();
+	}
+
+	private void initGUI() {
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Container c = frame.getContentPane();

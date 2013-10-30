@@ -1,4 +1,4 @@
-package org.cen.ui.gameboard.elements;
+package org.cen.ui.gameboard.elements.trajectory;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

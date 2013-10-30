@@ -1,4 +1,4 @@
-package org.cen.ui.gameboard.elements;
+package org.cen.ui.gameboard.elements.trajectory;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
