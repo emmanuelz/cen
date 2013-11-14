@@ -4,12 +4,12 @@ import java.awt.Shape;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 
-
 public class StraightLine extends AbstractTrajectoryPath {
 	private Path2D path;
 
 	public StraightLine(String name, double initialAngle, double finalAngle, Point2D... points) {
 		super(name, new Point2D.Double(), null, null, initialAngle, finalAngle);
+		order = 1000;
 
 		int n = points.length;
 		start = points[0];

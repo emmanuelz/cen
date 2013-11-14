@@ -5,7 +5,6 @@ import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-
 public class XYParser extends AbstractTrajectoryParser {
 	private String delimiter;
 	private ArrayList<Point2D> points = new ArrayList<Point2D>();
@@ -38,10 +37,10 @@ public class XYParser extends AbstractTrajectoryParser {
 	}
 
 	@Override
-	public ITrajectoryPath getPath() {
+	public ITrajectoryPath getPath(String name) {
 		int n = points.size();
 		Point2D[] array = points.toArray(new Point2D[n]);
-		ITrajectoryPath path = new StraightLine("path", 0, 0, array);
+		ITrajectoryPath path = new StraightLine(name, 0, 0, array);
 		return path;
 	}
 }

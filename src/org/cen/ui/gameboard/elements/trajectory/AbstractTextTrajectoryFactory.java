@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public abstract class AbstractTextTrajectoryFactory extends AbstractTrajectoryFactory {
 	@Override
-	public ITrajectoryPath getTrajectoryPath(InputStream stream) {
+	public ITrajectoryPath getTrajectoryPath(String name, InputStream stream) {
 		AbstractTrajectoryParser parser = createParser();
 		Scanner scanner = new Scanner(stream);
 		try {
@@ -17,7 +17,7 @@ public abstract class AbstractTextTrajectoryFactory extends AbstractTrajectoryFa
 		} finally {
 			scanner.close();
 		}
-		return parser.getPath();
+		return parser.getPath(name);
 	}
 
 	protected abstract AbstractTrajectoryParser createParser();

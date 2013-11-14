@@ -3,7 +3,6 @@ package org.cen.cup.cup2014.gameboard;
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,8 +23,6 @@ import org.cen.ui.gameboard.IGameBoardElement;
 import org.cen.ui.gameboard.RALColor;
 import org.cen.ui.gameboard.elements.Board;
 import org.cen.ui.gameboard.elements.Border;
-import org.cen.ui.gameboard.elements.trajectory.TextTrajectoryFactory;
-import org.cen.ui.gameboard.elements.trajectory.XYParser;
 
 /**
  * Gameboard for the cup 2012.
@@ -63,10 +60,6 @@ public class GameBoard2014 extends AbstractGameBoard {
 		visibleBounds = new Rectangle2D.Double(-150, -200, BOARD_WIDTH + 400, BOARD_HEIGHT + 400);
 		elements = new ArrayList<IGameBoardElement>();
 
-		TextTrajectoryFactory f = new TextTrajectoryFactory(new XYParser(";"));
-		InputStream in = this.getClass().getResourceAsStream("/org/cen/test/xy.txt");
-		IGameBoardElement e = (IGameBoardElement) f.getTrajectoryPath(in);
-		elements.add(e);
 		addElements();
 	}
 

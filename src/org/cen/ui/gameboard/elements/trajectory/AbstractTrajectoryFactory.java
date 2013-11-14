@@ -6,11 +6,12 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 public abstract class AbstractTrajectoryFactory {
-	public abstract ITrajectoryPath getTrajectoryPath(InputStream stream);
+	public abstract ITrajectoryPath getTrajectoryPath(String name, InputStream stream);
 
 	public ITrajectoryPath loadFromFile(String filePath) throws FileNotFoundException {
 		File file = new File(filePath);
+		String name = file.getName();
 		FileInputStream fis = new FileInputStream(file);
-		return getTrajectoryPath(fis);
+		return getTrajectoryPath(name, fis);
 	}
 }

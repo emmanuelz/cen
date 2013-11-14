@@ -13,11 +13,10 @@ public class GameBoardView extends JPanel implements ComponentListener {
 	private static final long serialVersionUID = 1L;
 	private GameBoardPainter painter;
 
-	public GameBoardView() {
+	public GameBoardView(GameBoard2014 gameBoard) {
 		super();
 		addComponentListener(this);
 		painter = new GameBoardPainter();
-		GameBoard2014 gameBoard = new GameBoard2014();
 		painter.setGameBoard(gameBoard);
 	}
 

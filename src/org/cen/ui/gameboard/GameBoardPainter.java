@@ -15,9 +15,7 @@ import java.awt.geom.Area;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,7 +36,7 @@ public class GameBoardPainter {
 	/**
 	 * The list of shapes to draw.
 	 */
-	protected List<ShapeData> shapes = new ArrayList<ShapeData>();
+	// protected List<ShapeData> shapes = new ArrayList<ShapeData>();
 
 	protected Dimension size;
 
@@ -63,26 +61,26 @@ public class GameBoardPainter {
 		drawFlags = EnumSet.of(GameBoardFlags.OBJECTS, GameBoardFlags.TRAJECTORY, GameBoardFlags.OPPONENT);
 	}
 
-	/**
-	 * Adds a shape to draw with the given attributes.
-	 * 
-	 * @param shape
-	 *            the shape to draw
-	 * @param stroke
-	 *            the stroke to use to draw the shape
-	 * @param paint
-	 *            the paint to use to draw the shape
-	 */
-	public void addShape(Shape shape, Stroke stroke, Paint paint) {
-		shapes.add(new ShapeData(shape, stroke, paint));
-	}
+	// /**
+	// * Adds a shape to draw with the given attributes.
+	// *
+	// * @param shape
+	// * the shape to draw
+	// * @param stroke
+	// * the stroke to use to draw the shape
+	// * @param paint
+	// * the paint to use to draw the shape
+	// */
+	// public void addShape(Shape shape, Stroke stroke, Paint paint) {
+	// shapes.add(new ShapeData(shape, stroke, paint));
+	// }
 
-	/**
-	 * Clears the list of the shapes to draw.
-	 */
-	public void clearShapes() {
-		shapes.clear();
-	}
+	// /**
+	// * Clears the list of the shapes to draw.
+	// */
+	// public void clearShapes() {
+	// shapes.clear();
+	// }
 
 	private void drawCircle(Graphics2D g2d, int x, int y, int radius) {
 		g2d.fillOval(x - radius, y - radius, radius * 2, radius * 2);
@@ -138,7 +136,9 @@ public class GameBoardPainter {
 
 		AffineTransform obstacles = AffineTransform.getScaleInstance(1.5, 1.5);
 		Graphics2D g2d = (Graphics2D) g;
-		AffineTransform t = g2d.getTransform();
+		AffineTransform oldTransform = g2d.getTransform();
+		AffineTransform t = new AffineTransform(oldTransform);
+		t.concatenate(transform);
 		Paint paint = g2d.getPaint();
 		Stroke stroke = g2d.getStroke();
 		try {
@@ -148,7 +148,7 @@ public class GameBoardPainter {
 					g.setColor(new Color(1f, 0f, 0f, .25f));
 				}
 				for (IGameBoardElement e : gameBoard.getElements()) {
-					g2d.setTransform(transform);
+					g2d.setTransform(t);
 					Point2D p = e.getPosition();
 					double x = p.getX();
 					double y = p.getY();
@@ -157,7 +157,7 @@ public class GameBoardPainter {
 					g2d.rotate(theta);
 					switch (stage) {
 					case OBJECTS:
-						paintElement(e, g2d, t);
+						paintElement(e, g2d, oldTransform);
 						g2d.setPaint(paint);
 						g2d.setStroke(stroke);
 						break;
@@ -172,7 +172,7 @@ public class GameBoardPainter {
 					}
 				}
 			}
-			g2d.setTransform(transform);
+			// g2d.setTransform(transform);
 			// if (drawFlags.contains(GameBoardFlags.PATHS)) {
 			// paintPaths(g2d, navigationMap, t);
 			// }
@@ -183,7 +183,7 @@ public class GameBoardPainter {
 			// trajectoryPainter.paint(g2d);
 			// }
 
-			paintShapes(g2d);
+			// paintShapes(g2d);
 			// paintRobot(g2d);
 			// if (drawFlags.contains(GameBoardFlags.OPPONENT)) {
 			// OpponentRobotPainter opponentRobotPainter = new
@@ -191,7 +191,7 @@ public class GameBoardPainter {
 			// opponentRobotPainter.paint(g2d);
 			// }
 		} finally {
-			g2d.setTransform(t);
+			g2d.setTransform(oldTransform);
 		}
 	}
 
@@ -204,25 +204,25 @@ public class GameBoardPainter {
 		e.paintUnscaled(g2d);
 	}
 
-	/**
-	 * Renders the shapes into the specified graphic object.
-	 * 
-	 * @param g
-	 *            the target graphic object
-	 */
-	public void paintShapes(Graphics2D g) {
-		for (ShapeData d : shapes) {
-			Stroke stroke = d.getStroke();
-			if (stroke != null) {
-				g.setStroke(stroke);
-			}
-			Paint paint = d.getPaint();
-			if (paint != null) {
-				g.setPaint(paint);
-			}
-			g.draw(d.getShape());
-		}
-	}
+	// /**
+	// * Renders the shapes into the specified graphic object.
+	// *
+	// * @param g
+	// * the target graphic object
+	// */
+	// public void paintShapes(Graphics2D g) {
+	// for (ShapeData d : shapes) {
+	// Stroke stroke = d.getStroke();
+	// if (stroke != null) {
+	// g.setStroke(stroke);
+	// }
+	// Paint paint = d.getPaint();
+	// if (paint != null) {
+	// g.setPaint(paint);
+	// }
+	// g.draw(d.getShape());
+	// }
+	// }
 
 	// /**
 	// * Draws the navigation points and their labels into the specified graphic
