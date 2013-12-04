@@ -64,11 +64,6 @@ public class BezierCurve extends AbstractTrajectoryPath {
 	}
 
 	@Override
-	protected Shape getTrajectory() {
-		return trajectory;
-	}
-
-	@Override
 	public Point2D[] getTrajectoryControlPoints() {
 		return new Point2D[] { controlPoint1, controlPoint2 };
 	}

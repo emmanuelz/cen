@@ -32,9 +32,4 @@ public class StraightLine extends AbstractTrajectoryPath {
 	public Point2D[] getTrajectoryControlPoints() {
 		return null;
 	}
-
-	@Override
-	protected Shape getTrajectory() {
-		return path;
-	}
 }

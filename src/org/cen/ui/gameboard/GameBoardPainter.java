@@ -1,6 +1,5 @@
 package org.cen.ui.gameboard;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -26,7 +25,16 @@ import java.util.Set;
  */
 public class GameBoardPainter {
 
+	private static final double ZOOM_FACTOR = 1.2;
+
 	private final Set<GameBoardFlags> drawFlags;
+
+	private IGameBoardService gameBoard;
+
+	// private final BasicStroke[] pathStrokes = { new BasicStroke(3), new
+	// BasicStroke(5), new BasicStroke(7) };
+
+	// private List<Location> trajectory;
 
 	/**
 	 * The drawing scale.
@@ -39,15 +47,9 @@ public class GameBoardPainter {
 	// protected List<ShapeData> shapes = new ArrayList<ShapeData>();
 
 	protected Dimension size;
-
-	// private List<Location> trajectory;
-
 	private AffineTransform transform;
 
 	private AffineTransform transformInv;
-	private IGameBoardService gameBoard;
-
-	private final BasicStroke[] pathStrokes = { new BasicStroke(3), new BasicStroke(5), new BasicStroke(7) };
 
 	/**
 	 * Constructor.
@@ -81,6 +83,25 @@ public class GameBoardPainter {
 	// public void clearShapes() {
 	// shapes.clear();
 	// }
+
+	public void adjustZoom(int increments, Point position) {
+		// zoom factor from increments
+		double factor = ZOOM_FACTOR * Math.abs(increments);
+		if (increments > 0) {
+			factor = 1 / factor;
+		}
+
+		// center zoom on given position
+		Point2D c = getRealCoordinates(position);
+		double x = c.getX();
+		double y = c.getY();
+		transform.translate(x, y);
+		transform.scale(factor, factor);
+		transform.translate(-x, -y);
+
+		// create the inverse transform
+		updateInverseTransform();
+	}
 
 	private void drawCircle(Graphics2D g2d, int x, int y, int radius) {
 		g2d.fillOval(x - radius, y - radius, radius * 2, radius * 2);
@@ -195,15 +216,6 @@ public class GameBoardPainter {
 		}
 	}
 
-	private void paintElement(IGameBoardElement e, Graphics2D g2d, AffineTransform t) {
-		e.paint(g2d);
-		g2d.setTransform(t);
-		Point2D point = e.getPosition();
-		Point2D p = transform.transform(point, null);
-		g2d.translate(p.getX(), p.getY());
-		e.paintUnscaled(g2d);
-	}
-
 	// /**
 	// * Renders the shapes into the specified graphic object.
 	// *
@@ -305,6 +317,15 @@ public class GameBoardPainter {
 	// robotPainter.paint(g2d);
 	// }
 
+	private void paintElement(IGameBoardElement e, Graphics2D g2d, AffineTransform t) {
+		e.paint(g2d);
+		g2d.setTransform(t);
+		Point2D point = e.getPosition();
+		Point2D p = transform.transform(point, null);
+		g2d.translate(p.getX(), p.getY());
+		e.paintUnscaled(g2d);
+	}
+
 	public void setGameBoard(IGameBoardService gameBoard) {
 		this.gameBoard = gameBoard;
 	}
@@ -336,11 +357,25 @@ public class GameBoardPainter {
 		transform.translate(0, -bounds.getHeight());
 		// create the inverse transform for transforming screen coordinates
 		// into real coordinates
+		updateInverseTransform();
+	}
+
+	private void updateInverseTransform() {
 		try {
 			transformInv = transform.createInverse();
 		} catch (NoninvertibleTransformException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void adjustPosition(int dx, int dy) {
+		// convert pixels to real coordinates
+		double tx = dx / transform.getScaleX();
+		// screen coordinates are indirect, y must be inverted
+		double ty = -dy / transform.getScaleX();
+		// adjust transform and update inverse
+		transform.translate(tx, ty);
+		updateInverseTransform();
 	}
 
 	// /**

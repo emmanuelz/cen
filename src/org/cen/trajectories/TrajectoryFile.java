@@ -11,6 +11,15 @@ public class TrajectoryFile implements ITrajectoryFile {
 	}
 
 	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof ITrajectoryFile) {
+			Path path2 = ((ITrajectoryFile) obj).getPath();
+			return path.equals(path2);
+		}
+		return false;
+	}
+
+	@Override
 	public String getName() {
 		Path p = path.getFileName();
 		return p.toString();
@@ -19,6 +28,11 @@ public class TrajectoryFile implements ITrajectoryFile {
 	@Override
 	public Path getPath() {
 		return path;
+	}
+
+	@Override
+	public int hashCode() {
+		return path.hashCode();
 	}
 
 	@Override

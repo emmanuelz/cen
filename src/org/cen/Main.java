@@ -3,6 +3,7 @@ package org.cen;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,10 +21,16 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -32,13 +39,16 @@ import org.cen.trajectories.ITrajectoryFile;
 import org.cen.trajectories.TrajectoryFile;
 import org.cen.trajectories.TrajectoryFilesFactory;
 import org.cen.ui.CheckListController;
+import org.cen.ui.gameboard.GameBoardMouseMoveEvent;
 import org.cen.ui.gameboard.GameBoardView;
 import org.cen.ui.gameboard.IGameBoardElement;
+import org.cen.ui.gameboard.IGameBoardEvent;
+import org.cen.ui.gameboard.IGameBoardEventListener;
 import org.cen.ui.gameboard.elements.trajectory.ITrajectoryPath;
 import org.cen.ui.gameboard.elements.trajectory.TextTrajectoryFactory;
 import org.cen.ui.gameboard.elements.trajectory.XYParser;
 
-public class Main {
+public class Main implements IGameBoardEventListener {
 	/**
 	 * @param args
 	 */
@@ -54,6 +64,14 @@ public class Main {
 	private GameBoard2014 gameBoard;
 
 	private GameBoardView gameBoardView;
+
+	private JPanel statusBar;
+
+	private JLabel statusBarLabel;
+
+	private DefaultListModel<ITrajectoryFile> trajectoriesModel;
+
+	private ListSelectionModel trajectoriesSelection;
 
 	public Main() {
 		super();
@@ -78,15 +96,19 @@ public class Main {
 			e.printStackTrace();
 		}
 
-		DefaultListModel<ITrajectoryFile> model = trajectoryFilesFactory.getListModel();
-		final JList<ITrajectoryFile> list = new JList<ITrajectoryFile>(model);
-		new CheckListController<>(list);
-		list.addListSelectionListener(new ListSelectionListener() {
+		trajectoriesModel = trajectoryFilesFactory.getListModel();
+		final JList<ITrajectoryFile> list = new JList<ITrajectoryFile>(trajectoriesModel);
+		CheckListController<ITrajectoryFile> controller = new CheckListController<ITrajectoryFile>(list);
+		trajectoriesSelection = controller.getSelectionModel();
+		trajectoriesSelection.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				List<ITrajectoryFile> values = list.getSelectedValuesList();
-				for (ITrajectoryFile file : values) {
-					updateElement(file);
+				int start = e.getFirstIndex();
+				int end = e.getLastIndex();
+				for (int i = start; i <= end; i++) {
+					ITrajectoryFile file = trajectoriesModel.get(i);
+					boolean b = trajectoriesSelection.isSelectedIndex(i);
+					updateElement(file, b);
 				}
 			}
 		});
@@ -95,39 +117,12 @@ public class Main {
 		c.add(list, BorderLayout.LINE_START);
 	}
 
-	protected void watchDirectory(File directory) {
-		try {
-			final WatchService watcher = FileSystems.getDefault().newWatchService();
-			final Path path = directory.toPath();
-			path.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
-
-			Timer timer = new Timer();
-			TimerTask task = new TimerTask() {
-				@Override
-				public void run() {
-					WatchKey key = watcher.poll();
-					if (key == null) {
-						return;
-					}
-					List<WatchEvent<?>> events = key.pollEvents();
-					for (WatchEvent<?> event : events) {
-						Kind<?> kind = event.kind();
-						if (kind == StandardWatchEventKinds.OVERFLOW) {
-							continue;
-						}
-						WatchEvent<Path> ev = (WatchEvent<Path>) event;
-						Path filename = ev.context();
-						Path p = path.resolve(filename);
-						TrajectoryFile file = new TrajectoryFile(p);
-						updateElement(file);
-					}
-					key.reset();
-				}
-			};
-			timer.scheduleAtFixedRate(task, 1000, 1000);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	private void handleMouseMove(GameBoardMouseMoveEvent e) {
+		Point2D p = e.getPosition();
+		double x = p.getX();
+		double y = p.getY();
+		String s = String.format("x=%.0f mm ; y=%.0f mm", x, y);
+		statusBarLabel.setText(s);
 	}
 
 	private void initGUI() {
@@ -139,15 +134,50 @@ public class Main {
 		gameBoard = new GameBoard2014();
 		gameBoardView = new GameBoardView(gameBoard);
 		gameBoardView.setPreferredSize(new Dimension(640, 480));
+		gameBoardView.addGameBoardEventListener(this);
 		c.add(gameBoardView, BorderLayout.CENTER);
 
+		addStatusBar(c);
 		addTrajectoriesList(c);
 		frame.pack();
 		frame.setVisible(true);
 	}
 
-	private void updateElement(ITrajectoryFile file) {
+	private void addStatusBar(Container c) {
+		statusBar = new JPanel();
+		statusBar.setBorder(new BevelBorder(BevelBorder.LOWERED));
+		statusBar.setPreferredSize(new Dimension(0, 16));
+		statusBar.setLayout(new BoxLayout(statusBar, BoxLayout.X_AXIS));
+		c.add(statusBar, BorderLayout.SOUTH);
+
+		statusBarLabel = new JLabel();
+		statusBarLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		statusBar.add(statusBarLabel);
+	}
+
+	private boolean isDisplayed(ITrajectoryFile file) {
+		int i = trajectoriesModel.indexOf(file);
+		boolean b = trajectoriesSelection.isSelectedIndex(i);
+		return b;
+	}
+
+	@Override
+	public void onGameBoardEvent(IGameBoardEvent event) {
+		if (event instanceof GameBoardMouseMoveEvent) {
+			GameBoardMouseMoveEvent e = (GameBoardMouseMoveEvent) event;
+			handleMouseMove(e);
+		}
+	}
+
+	private void updateElement(ITrajectoryFile file, boolean display) {
 		String name = file.getName();
+		gameBoard.removeElements(name);
+
+		if (!display) {
+			gameBoardView.repaint();
+			return;
+		}
+
 		XYParser parser = new XYParser(";");
 		TextTrajectoryFactory factory = new TextTrajectoryFactory(parser);
 
@@ -170,8 +200,60 @@ public class Main {
 			return;
 		}
 		IGameBoardElement element = (IGameBoardElement) trajectory;
-		gameBoard.removeElements(name);
-		gameBoard.getElements().add(element);
+		List<IGameBoardElement> elements = gameBoard.getElements();
+		elements.add(element);
 		gameBoardView.repaint();
+	}
+
+	protected void watchDirectory(File directory) {
+		try {
+			final WatchService watcher = FileSystems.getDefault().newWatchService();
+			final Path path = directory.toPath();
+			path.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
+
+			Timer timer = new Timer();
+			TimerTask task = new TimerTask() {
+				@Override
+				public void run() {
+					WatchKey key = watcher.poll();
+					if (key == null) {
+						return;
+					}
+					List<WatchEvent<?>> events = key.pollEvents();
+					for (WatchEvent<?> event : events) {
+						Kind<?> kind = event.kind();
+						if (kind == StandardWatchEventKinds.OVERFLOW) {
+							continue;
+						}
+
+						WatchEvent<Path> ev = (WatchEvent<Path>) event;
+						Path filename = ev.context();
+						Path p = path.resolve(filename);
+						TrajectoryFile file = new TrajectoryFile(p);
+						if (kind == StandardWatchEventKinds.ENTRY_CREATE) {
+							addFile(file);
+						} else if (kind == StandardWatchEventKinds.ENTRY_DELETE) {
+							removeFile(file);
+						} else if (kind == StandardWatchEventKinds.ENTRY_MODIFY) {
+							boolean b = isDisplayed(file);
+							updateElement(file, b);
+						}
+					}
+					key.reset();
+				}
+			};
+			timer.scheduleAtFixedRate(task, 1000, 1000);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected void removeFile(TrajectoryFile file) {
+		updateElement(file, false);
+		trajectoriesModel.removeElement(file);
+	}
+
+	protected void addFile(TrajectoryFile file) {
+		trajectoriesModel.addElement(file);
 	}
 }
