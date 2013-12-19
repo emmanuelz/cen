@@ -8,16 +8,16 @@ import java.nio.file.Paths;
 
 import javax.swing.DefaultListModel;
 
-public class TrajectoryFilesFactory {
-	private DefaultListModel<ITrajectoryFile> model = new DefaultListModel<ITrajectoryFile>();
+public class InputFilesFactory {
+	private DefaultListModel<IInputFile> model = new DefaultListModel<IInputFile>();
 
-	public void addSource(URI uri) {
+	public void addSource(URI uri, InputFileType type) {
 		Path path = Paths.get(uri);
 		try {
 			DirectoryStream<Path> stream = Files.newDirectoryStream(path);
 			try {
 				for (Path p : stream) {
-					TrajectoryFile file = new TrajectoryFile(p);
+					InputFile file = new InputFile(p, type);
 					model.add(0, file);
 				}
 			} finally {
@@ -28,7 +28,7 @@ public class TrajectoryFilesFactory {
 		}
 	}
 
-	public DefaultListModel<ITrajectoryFile> getListModel() {
+	public DefaultListModel<IInputFile> getListModel() {
 		return model;
 	}
 }

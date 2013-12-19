@@ -2,18 +2,20 @@ package org.cen.trajectories;
 
 import java.nio.file.Path;
 
-public class TrajectoryFile implements ITrajectoryFile {
+public class InputFile implements IInputFile {
 	private Path path;
+	private InputFileType type;
 
-	public TrajectoryFile(Path path) {
+	public InputFile(Path path, InputFileType type) {
 		super();
 		this.path = path;
+		this.type = type;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof ITrajectoryFile) {
-			Path path2 = ((ITrajectoryFile) obj).getPath();
+		if (obj instanceof IInputFile) {
+			Path path2 = ((IInputFile) obj).getPath();
 			return path.equals(path2);
 		}
 		return false;
@@ -28,6 +30,11 @@ public class TrajectoryFile implements ITrajectoryFile {
 	@Override
 	public Path getPath() {
 		return path;
+	}
+
+	@Override
+	public InputFileType getType() {
+		return type;
 	}
 
 	@Override

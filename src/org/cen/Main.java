@@ -3,8 +3,10 @@ package org.cen;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -35,15 +37,18 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.cen.cup.cup2014.gameboard.GameBoard2014;
-import org.cen.trajectories.ITrajectoryFile;
-import org.cen.trajectories.TrajectoryFile;
-import org.cen.trajectories.TrajectoryFilesFactory;
+import org.cen.trajectories.IInputFile;
+import org.cen.trajectories.InputFile;
+import org.cen.trajectories.InputFileType;
+import org.cen.trajectories.InputFilesFactory;
 import org.cen.ui.CheckListController;
 import org.cen.ui.gameboard.GameBoardMouseMoveEvent;
 import org.cen.ui.gameboard.GameBoardView;
 import org.cen.ui.gameboard.IGameBoardElement;
 import org.cen.ui.gameboard.IGameBoardEvent;
 import org.cen.ui.gameboard.IGameBoardEventListener;
+import org.cen.ui.gameboard.elements.trajectory.Gauge;
+import org.cen.ui.gameboard.elements.trajectory.GaugeFactory;
 import org.cen.ui.gameboard.elements.trajectory.ITrajectoryPath;
 import org.cen.ui.gameboard.elements.trajectory.TextTrajectoryFactory;
 import org.cen.ui.gameboard.elements.trajectory.XYParser;
@@ -65,56 +70,116 @@ public class Main implements IGameBoardEventListener {
 
 	private GameBoardView gameBoardView;
 
+	private CheckListController<IInputFile> gaugesController;
+
 	private JPanel statusBar;
 
 	private JLabel statusBarLabel;
 
-	private DefaultListModel<ITrajectoryFile> trajectoriesModel;
-
-	private ListSelectionModel trajectoriesSelection;
+	private CheckListController<IInputFile> trajectoriesController;
 
 	public Main() {
 		super();
 		initGUI();
 	}
 
+	private DefaultListModel<IInputFile> getModel(IInputFile file) {
+		DefaultListModel<IInputFile> model = null;
+		switch (file.getType()) {
+		case GAUGE:
+			model = (DefaultListModel<IInputFile>) gaugesController.getListModel();
+			break;
+		case TRAJECTORY:
+			model = (DefaultListModel<IInputFile>) trajectoriesController.getListModel();
+			break;
+		}
+		return model;
+	}
+
+	protected void addFile(InputFile file) {
+		DefaultListModel<IInputFile> model = getModel(file);
+		model.addElement(file);
+	}
+
+	private void addGaugesList(Container c) {
+		InputFilesFactory gaugesFilesFactory = new InputFilesFactory();
+		gaugesController = createList("gauges", "/org/cen/test/gauges", gaugesFilesFactory, InputFileType.GAUGE);
+		JList<IInputFile> list = gaugesController.getList();
+		list.setPreferredSize(new Dimension(160, 320));
+		c.add(list);
+	}
+
+	private void addStatusBar(Container c) {
+		statusBar = new JPanel();
+		statusBar.setBorder(new BevelBorder(BevelBorder.LOWERED));
+		statusBar.setPreferredSize(new Dimension(0, 16));
+		statusBar.setLayout(new BoxLayout(statusBar, BoxLayout.X_AXIS));
+		c.add(statusBar, BorderLayout.SOUTH);
+
+		statusBarLabel = new JLabel();
+		statusBarLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		statusBar.add(statusBarLabel);
+	}
+
 	private void addTrajectoriesList(Container c) {
-		TrajectoryFilesFactory trajectoryFilesFactory = new TrajectoryFilesFactory();
-		String dir = System.getProperty("user.dir");
-		File file = new File(dir, "trajectories");
-		URI uri = file.toURI();
-		watchDirectory(file);
-		trajectoryFilesFactory.addSource(uri);
+		InputFilesFactory trajectoryFilesFactory = new InputFilesFactory();
+		trajectoriesController = createList("trajectories", "/org/cen/test/trajectories", trajectoryFilesFactory, InputFileType.TRAJECTORY);
+		JList<IInputFile> list = trajectoriesController.getList();
+		list.setPreferredSize(new Dimension(160, 320));
+		c.add(list);
+	}
+
+	private void addTrajectoriesPanel(Container c) {
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridLayout(2, 1));
+		c.add(panel, BorderLayout.LINE_START);
+
+		addTrajectoriesList(panel);
+		addGaugesList(panel);
+	}
+
+	private CheckListController<IInputFile> createList(String directory, String packagePath, InputFilesFactory factory, InputFileType type) {
 		try {
-			URL url = this.getClass().getResource("/org/cen/test");
-			uri = url.toURI();
+			URL url = this.getClass().getResource(packagePath);
+			URI uri = url.toURI();
 			if (uri.getScheme().equals("jar")) {
 				FileSystems.newFileSystem(uri, new HashMap<String, String>());
 			}
-			trajectoryFilesFactory.addSource(uri);
+			factory.addSource(uri, type);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		trajectoriesModel = trajectoryFilesFactory.getListModel();
-		final JList<ITrajectoryFile> list = new JList<ITrajectoryFile>(trajectoriesModel);
-		CheckListController<ITrajectoryFile> controller = new CheckListController<ITrajectoryFile>(list);
-		trajectoriesSelection = controller.getSelectionModel();
-		trajectoriesSelection.addListSelectionListener(new ListSelectionListener() {
+		String dir = System.getProperty("user.dir");
+		File file = new File(dir, directory);
+		URI uri = file.toURI();
+		factory.addSource(uri, type);
+
+		final DefaultListModel<IInputFile> listModel = factory.getListModel();
+		final JList<IInputFile> list = new JList<IInputFile>(listModel);
+		CheckListController<IInputFile> controller = new CheckListController<IInputFile>(list);
+		final ListSelectionModel selectionModel = controller.getSelectionModel();
+		selectionModel.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				int start = e.getFirstIndex();
 				int end = e.getLastIndex();
 				for (int i = start; i <= end; i++) {
-					ITrajectoryFile file = trajectoriesModel.get(i);
-					boolean b = trajectoriesSelection.isSelectedIndex(i);
+					IInputFile file = listModel.get(i);
+					boolean b = selectionModel.isSelectedIndex(i);
 					updateElement(file, b);
 				}
 			}
 		});
 
-		list.setPreferredSize(new Dimension(160, 320));
-		c.add(list, BorderLayout.LINE_START);
+		watchDirectory(file, listModel, selectionModel, type);
+
+		return controller;
+	}
+
+	protected void handleFileModified(InputFile file, DefaultListModel<IInputFile> listModel, ListSelectionModel selectionModel) {
+		boolean b = isDisplayed(file, listModel, selectionModel);
+		updateElement(file, b);
 	}
 
 	private void handleMouseMove(GameBoardMouseMoveEvent e) {
@@ -138,26 +203,14 @@ public class Main implements IGameBoardEventListener {
 		c.add(gameBoardView, BorderLayout.CENTER);
 
 		addStatusBar(c);
-		addTrajectoriesList(c);
+		addTrajectoriesPanel(c);
 		frame.pack();
 		frame.setVisible(true);
 	}
 
-	private void addStatusBar(Container c) {
-		statusBar = new JPanel();
-		statusBar.setBorder(new BevelBorder(BevelBorder.LOWERED));
-		statusBar.setPreferredSize(new Dimension(0, 16));
-		statusBar.setLayout(new BoxLayout(statusBar, BoxLayout.X_AXIS));
-		c.add(statusBar, BorderLayout.SOUTH);
-
-		statusBarLabel = new JLabel();
-		statusBarLabel.setHorizontalAlignment(SwingConstants.LEFT);
-		statusBar.add(statusBarLabel);
-	}
-
-	private boolean isDisplayed(ITrajectoryFile file) {
-		int i = trajectoriesModel.indexOf(file);
-		boolean b = trajectoriesSelection.isSelectedIndex(i);
+	private boolean isDisplayed(InputFile file, DefaultListModel<IInputFile> listModel, ListSelectionModel selectionModel) {
+		int i = listModel.indexOf(file);
+		boolean b = selectionModel.isSelectedIndex(i);
 		return b;
 	}
 
@@ -169,7 +222,61 @@ public class Main implements IGameBoardEventListener {
 		}
 	}
 
-	private void updateElement(ITrajectoryFile file, boolean display) {
+	protected void removeFile(InputFile file) {
+		updateElement(file, false);
+		DefaultListModel<IInputFile> model = getModel(file);
+		model.removeElement(file);
+	}
+
+	private void updateElement(IInputFile file, boolean display) {
+		switch (file.getType()) {
+		case GAUGE:
+			updateGaugeElement(file, display);
+			break;
+		case TRAJECTORY:
+			updateTrajectoryElement(file, display);
+			break;
+		}
+	}
+
+	private void updateGaugeElement(IInputFile file, boolean display) {
+		ListSelectionModel selection = trajectoriesController.getSelectionModel();
+		int start = selection.getMinSelectionIndex();
+		int end = selection.getMaxSelectionIndex();
+		for (int i = start; i <= end; i++) {
+			if (selection.isSelectedIndex(i)) {
+				DefaultListModel<IInputFile> model = (DefaultListModel<IInputFile>) trajectoriesController.getListModel();
+				IInputFile item = model.elementAt(i);
+				String name = item.getName();
+				List<IGameBoardElement> elements = gameBoard.findElements(name);
+				if (elements.size() == 0) {
+					continue;
+				}
+				IGameBoardElement element = elements.get(0);
+				if (!(element instanceof ITrajectoryPath)) {
+					continue;
+				}
+
+				ITrajectoryPath path = (ITrajectoryPath) element;
+				if (!display) {
+					path.setGauge(null);
+					continue;
+				}
+
+				GaugeFactory factory = new GaugeFactory();
+				name = file.getPath().toString();
+				try {
+					Gauge gauge = factory.getGauge(name);
+					path.setGauge(gauge);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		gameBoardView.repaint();
+	}
+
+	private void updateTrajectoryElement(IInputFile file, boolean display) {
 		String name = file.getName();
 		gameBoard.removeElements(name);
 
@@ -205,7 +312,7 @@ public class Main implements IGameBoardEventListener {
 		gameBoardView.repaint();
 	}
 
-	protected void watchDirectory(File directory) {
+	protected void watchDirectory(File directory, final DefaultListModel<IInputFile> listModel, final ListSelectionModel selectionModel, final InputFileType type) {
 		try {
 			final WatchService watcher = FileSystems.getDefault().newWatchService();
 			final Path path = directory.toPath();
@@ -229,14 +336,13 @@ public class Main implements IGameBoardEventListener {
 						WatchEvent<Path> ev = (WatchEvent<Path>) event;
 						Path filename = ev.context();
 						Path p = path.resolve(filename);
-						TrajectoryFile file = new TrajectoryFile(p);
+						InputFile file = new InputFile(p, type);
 						if (kind == StandardWatchEventKinds.ENTRY_CREATE) {
 							addFile(file);
 						} else if (kind == StandardWatchEventKinds.ENTRY_DELETE) {
 							removeFile(file);
 						} else if (kind == StandardWatchEventKinds.ENTRY_MODIFY) {
-							boolean b = isDisplayed(file);
-							updateElement(file, b);
+							handleFileModified(file, listModel, selectionModel);
 						}
 					}
 					key.reset();
@@ -246,14 +352,5 @@ public class Main implements IGameBoardEventListener {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	protected void removeFile(TrajectoryFile file) {
-		updateElement(file, false);
-		trajectoriesModel.removeElement(file);
-	}
-
-	protected void addFile(TrajectoryFile file) {
-		trajectoriesModel.addElement(file);
 	}
 }

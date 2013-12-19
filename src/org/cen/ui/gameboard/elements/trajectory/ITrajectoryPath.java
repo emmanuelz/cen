@@ -10,6 +10,20 @@ import java.awt.geom.Point2D;
  */
 public interface ITrajectoryPath {
 	/**
+	 * Returns the path object representing the trajectory.
+	 * 
+	 * @return the path object representing the trajectory
+	 */
+	public Shape getPath();
+
+	/**
+	 * Returns the position of the element on the gameboard.
+	 * 
+	 * @return the position of the element on the gameboard
+	 */
+	public Point2D getPosition();
+
+	/**
 	 * Returns the orientation of the robot when ending the trajectory.
 	 * 
 	 * @return the orientation of the robot when ending the trajectory in
@@ -24,20 +38,6 @@ public interface ITrajectoryPath {
 	 *         radians
 	 */
 	public double getRobotInitialAngle();
-
-	/**
-	 * Returns the path object representing the trajectory.
-	 * 
-	 * @return the path object representing the trajectory
-	 */
-	public Shape getPath();
-
-	/**
-	 * Returns the position of the element on the gameboard.
-	 * 
-	 * @return the position of the element on the gameboard
-	 */
-	public Point2D getPosition();
 
 	/**
 	 * Returns the control points of the trajectory if any.
@@ -59,4 +59,13 @@ public interface ITrajectoryPath {
 	 * @return the starting position of the trajectory
 	 */
 	public Point2D getTrajectoryStart();
+
+	/**
+	 * Sets the interface representing the gauge of the object used to render
+	 * the footprint of the trajectory.
+	 * 
+	 * @param gauge
+	 *            the gauge of the object which this trajectory is related to
+	 */
+	public void setGauge(IGauge gauge);
 }

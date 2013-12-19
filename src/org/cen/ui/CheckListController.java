@@ -12,6 +12,7 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -35,6 +36,15 @@ public class CheckListController<E> extends MouseAdapter implements ListSelectio
 	public void actionPerformed(ActionEvent e) {
 		int index = list.getSelectedIndex();
 		toggleSelection(index);
+	}
+
+	public JList<E> getList() {
+		return list;
+	}
+
+	public ListModel<E> getListModel() {
+		ListModel<E> model = list.getModel();
+		return model;
 	}
 
 	public ListSelectionModel getSelectionModel() {

@@ -1,6 +1,5 @@
 package org.cen.ui.gameboard.elements.trajectory;
 
-import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -11,7 +10,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
 public class GaugeFactory {
-	public Shape getGauge(String filePath) throws FileNotFoundException {
+	public Gauge getGauge(String filePath) throws FileNotFoundException {
 		GeneralPath path = new GeneralPath();
 
 		FileReader reader = new FileReader(filePath);
@@ -26,6 +25,7 @@ public class GaugeFactory {
 			e.printStackTrace();
 		}
 
-		return path;
+		Gauge gauge = new Gauge(path);
+		return gauge;
 	}
 }
