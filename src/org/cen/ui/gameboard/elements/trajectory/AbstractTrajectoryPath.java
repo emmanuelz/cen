@@ -11,6 +11,7 @@ import org.cen.ui.gameboard.AbstractGameBoardElement;
 
 public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement implements ITrajectoryPath, IGauge {
 	private static final Color GAUGE_COLOR = new Color(0x200000ff, true);
+
 	private static final Stroke OUTLINE_STROKE = new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10, new float[] { 15, 15 }, 0);
 	protected Point2D end;
 	protected double finalAngle;
@@ -34,6 +35,11 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 
 	private Color getColor() {
 		return Color.BLUE;
+	}
+
+	@Override
+	public IGauge getGauge() {
+		return gauge;
 	}
 
 	@Override

@@ -3,7 +3,9 @@ package org.cen;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,8 +25,11 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -42,6 +47,7 @@ import org.cen.trajectories.InputFile;
 import org.cen.trajectories.InputFileType;
 import org.cen.trajectories.InputFilesFactory;
 import org.cen.ui.CheckListController;
+import org.cen.ui.ListController;
 import org.cen.ui.gameboard.GameBoardMouseMoveEvent;
 import org.cen.ui.gameboard.GameBoardView;
 import org.cen.ui.gameboard.IGameBoardElement;
@@ -70,13 +76,17 @@ public class Main implements IGameBoardEventListener {
 
 	private GameBoardView gameBoardView;
 
-	private CheckListController<IInputFile> gaugesController;
+	private ListController<IInputFile> gaugesController;
 
 	private JPanel statusBar;
 
 	private JLabel statusBarLabel;
 
-	private CheckListController<IInputFile> trajectoriesController;
+	private ListController<IInputFile> trajectoriesController;
+
+	private CheckListController<IGameBoardElement> elementsController;
+
+	private IGameBoardElement currentTrajectory = null;
 
 	public Main() {
 		super();
@@ -105,8 +115,13 @@ public class Main implements IGameBoardEventListener {
 		InputFilesFactory gaugesFilesFactory = new InputFilesFactory();
 		gaugesController = createList("gauges", "/org/cen/test/gauges", gaugesFilesFactory, InputFileType.GAUGE);
 		JList<IInputFile> list = gaugesController.getList();
-		list.setPreferredSize(new Dimension(160, 320));
-		c.add(list);
+		list.setPreferredSize(new Dimension(160, 160));
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.anchor = GridBagConstraints.NORTH;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.VERTICAL;
+		c.add(list, gbc);
 	}
 
 	private void addStatusBar(Container c) {
@@ -121,24 +136,77 @@ public class Main implements IGameBoardEventListener {
 		statusBar.add(statusBarLabel);
 	}
 
+	private void addElementsList(Container c) {
+		DefaultListModel<IGameBoardElement> model = new DefaultListModel<IGameBoardElement>();
+		JList<IGameBoardElement> list = new JList<IGameBoardElement>(model);
+		elementsController = new CheckListController<IGameBoardElement>(list);
+		list.setPreferredSize(new Dimension(160, 160));
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.anchor = GridBagConstraints.NORTH;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.VERTICAL;
+		c.add(list, gbc);
+	}
+
 	private void addTrajectoriesList(Container c) {
 		InputFilesFactory trajectoryFilesFactory = new InputFilesFactory();
 		trajectoriesController = createList("trajectories", "/org/cen/test/trajectories", trajectoryFilesFactory, InputFileType.TRAJECTORY);
 		JList<IInputFile> list = trajectoriesController.getList();
-		list.setPreferredSize(new Dimension(160, 320));
-		c.add(list);
+		list.setPreferredSize(new Dimension(160, 160));
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.anchor = GridBagConstraints.NORTH;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.VERTICAL;
+		c.add(list, gbc);
 	}
 
 	private void addTrajectoriesPanel(Container c) {
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(2, 1));
+		panel.setLayout(new GridBagLayout());
 		c.add(panel, BorderLayout.LINE_START);
 
+		addLabel(panel, "Trajectories");
 		addTrajectoriesList(panel);
+		addLabel(panel, "Gauges");
 		addGaugesList(panel);
+		addButton(panel, new AbstractAction("add") {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				addTrajectory();
+			}
+		});
+		addLabel(panel, "Displayed");
+		addElementsList(panel);
 	}
 
-	private CheckListController<IInputFile> createList(String directory, String packagePath, InputFilesFactory factory, InputFileType type) {
+	protected void addTrajectory() {
+		DefaultListModel<IGameBoardElement> model = (DefaultListModel<IGameBoardElement>) elementsController.getListModel();
+		int start = model.getSize();
+		model.addElement(currentTrajectory);
+
+		ListSelectionModel selection = elementsController.getSelectionModel();
+		selection.addSelectionInterval(start, start);
+	}
+
+	private void addButton(Container c, Action action) {
+		JButton button = new JButton(action);
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		c.add(button, gbc);
+	}
+
+	private void addLabel(Container c, String text) {
+		JLabel label = new JLabel(text);
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		c.add(label, gbc);
+	}
+
+	private ListController<IInputFile> createList(String directory, String packagePath, InputFilesFactory factory, InputFileType type) {
 		try {
 			URL url = this.getClass().getResource(packagePath);
 			URI uri = url.toURI();
@@ -157,7 +225,7 @@ public class Main implements IGameBoardEventListener {
 
 		final DefaultListModel<IInputFile> listModel = factory.getListModel();
 		final JList<IInputFile> list = new JList<IInputFile>(listModel);
-		CheckListController<IInputFile> controller = new CheckListController<IInputFile>(list);
+		ListController<IInputFile> controller = new ListController<IInputFile>(list);
 		final ListSelectionModel selectionModel = controller.getSelectionModel();
 		selectionModel.addListSelectionListener(new ListSelectionListener() {
 			@Override
@@ -240,38 +308,19 @@ public class Main implements IGameBoardEventListener {
 	}
 
 	private void updateGaugeElement(IInputFile file, boolean display) {
-		ListSelectionModel selection = trajectoriesController.getSelectionModel();
-		int start = selection.getMinSelectionIndex();
-		int end = selection.getMaxSelectionIndex();
-		for (int i = start; i <= end; i++) {
-			if (selection.isSelectedIndex(i)) {
-				DefaultListModel<IInputFile> model = (DefaultListModel<IInputFile>) trajectoriesController.getListModel();
-				IInputFile item = model.elementAt(i);
-				String name = item.getName();
-				List<IGameBoardElement> elements = gameBoard.findElements(name);
-				if (elements.size() == 0) {
-					continue;
-				}
-				IGameBoardElement element = elements.get(0);
-				if (!(element instanceof ITrajectoryPath)) {
-					continue;
-				}
+		if (!(currentTrajectory instanceof ITrajectoryPath) || !display) {
+			return;
+		}
 
-				ITrajectoryPath path = (ITrajectoryPath) element;
-				if (!display) {
-					path.setGauge(null);
-					continue;
-				}
+		ITrajectoryPath path = (ITrajectoryPath) currentTrajectory;
 
-				GaugeFactory factory = new GaugeFactory();
-				name = file.getPath().toString();
-				try {
-					Gauge gauge = factory.getGauge(name);
-					path.setGauge(gauge);
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				}
-			}
+		GaugeFactory factory = new GaugeFactory();
+		String name = file.getPath().toString();
+		try {
+			Gauge gauge = factory.getGauge(name);
+			path.setGauge(gauge);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
 		gameBoardView.repaint();
 	}
@@ -282,6 +331,9 @@ public class Main implements IGameBoardEventListener {
 
 		if (!display) {
 			gameBoardView.repaint();
+			if (currentTrajectory.getName() == name) {
+				currentTrajectory = null;
+			}
 			return;
 		}
 
@@ -309,6 +361,11 @@ public class Main implements IGameBoardEventListener {
 		IGameBoardElement element = (IGameBoardElement) trajectory;
 		List<IGameBoardElement> elements = gameBoard.getElements();
 		elements.add(element);
+		currentTrajectory = element;
+
+		JList<IInputFile> list = gaugesController.getList();
+		list.clearSelection();
+
 		gameBoardView.repaint();
 	}
 

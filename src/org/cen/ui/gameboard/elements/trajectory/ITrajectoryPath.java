@@ -68,4 +68,12 @@ public interface ITrajectoryPath {
 	 *            the gauge of the object which this trajectory is related to
 	 */
 	public void setGauge(IGauge gauge);
+
+	/**
+	 * Returns the interface representing the gauge of the object used to render
+	 * the footprint of the trajectory.
+	 * 
+	 * @return the gauge of the object which this trajectory is related to
+	 */
+	public IGauge getGauge();
 }
