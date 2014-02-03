@@ -1,5 +1,8 @@
 package org.cen.trajectories;
 
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.Path;
 
 public class InputFile implements IInputFile {
@@ -19,6 +22,14 @@ public class InputFile implements IInputFile {
 			return path.equals(path2);
 		}
 		return false;
+	}
+
+	@Override
+	public InputStream getInputStream() throws Exception {
+		URI uri = path.toUri();
+		URL url = uri.toURL();
+		InputStream is = url.openStream();
+		return is;
 	}
 
 	@Override

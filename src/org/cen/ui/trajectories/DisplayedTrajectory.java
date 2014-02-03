@@ -5,21 +5,35 @@ import org.cen.ui.gameboard.elements.trajectory.IGauge;
 import org.cen.ui.gameboard.elements.trajectory.ITrajectoryPath;
 
 public class DisplayedTrajectory {
-	private String label;
 	private IGameBoardElement element;
+	private String gaugeLabel;
+	private String pathLabel;
+	private boolean visible;
 
-	public DisplayedTrajectory(String label, IGameBoardElement element) {
+	public DisplayedTrajectory(String pathLabel, String gaugeLabel, IGameBoardElement element) {
 		super();
-		this.label = label;
+		visible = true;
+		this.pathLabel = pathLabel;
+		this.gaugeLabel = gaugeLabel;
 		this.element = element;
-	}
-
-	public String getLabel() {
-		return label;
 	}
 
 	public IGameBoardElement getElement() {
 		return element;
+	}
+
+	public IGauge getGauge() {
+		ITrajectoryPath path = getTrajectoryPath();
+		IGauge gauge = path.getGauge();
+		return gauge;
+	}
+
+	public String getGaugeLabel() {
+		return gaugeLabel;
+	}
+
+	public String getPathLabel() {
+		return pathLabel;
 	}
 
 	public ITrajectoryPath getTrajectoryPath() {
@@ -27,9 +41,20 @@ public class DisplayedTrajectory {
 		return path;
 	}
 
-	public IGauge getGauge() {
-		ITrajectoryPath path = getTrajectoryPath();
-		IGauge gauge = path.getGauge();
-		return gauge;
+	public boolean isVisible() {
+		return visible;
+	}
+
+	public void setElement(IGameBoardElement element) {
+		this.element = element;
+	}
+
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+	}
+
+	@Override
+	public String toString() {
+		return pathLabel + "-" + gaugeLabel;
 	}
 }
