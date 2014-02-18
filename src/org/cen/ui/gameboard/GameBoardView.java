@@ -129,4 +129,8 @@ public class GameBoardView extends JPanel implements ComponentListener, MouseLis
 		super.paintComponent(g);
 		painter.paint(g);
 	}
+
+	public void setTimestamp(double timestamp) {
+		painter.setTimestamp(timestamp);
+	}
 }

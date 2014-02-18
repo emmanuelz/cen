@@ -8,11 +8,11 @@ import java.awt.Stroke;
 import java.awt.geom.Point2D;
 
 import org.cen.ui.gameboard.AbstractGameBoardElement;
+import org.cen.ui.gameboard.IGameBoardTimedElement;
 
-public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement implements ITrajectoryPath, IGauge {
-	private static final Color GAUGE_COLOR = new Color(0x200000ff, true);
-
-	private static final Stroke OUTLINE_STROKE = new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10, new float[] { 15, 15 }, 0);
+public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement implements ITrajectoryPath, IGauge, IGameBoardTimedElement {
+	protected static final Color GAUGE_COLOR = new Color(0x200000ff, true);
+	protected static final Stroke OUTLINE_STROKE = new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10, new float[] { 15, 15 }, 0);
 	protected Point2D end;
 	protected double finalAngle;
 	private IGauge gauge;
@@ -97,6 +97,18 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 		g.setStroke(stroke);
 		g.setColor(color);
 		g.draw(path);
+	}
+
+	protected void paintGauge(Graphics2D g) {
+		Shape gauge = getGauge().getGaugeShape();
+		if (gauge != null) {
+			g.setColor(Color.LIGHT_GRAY);
+			g.fill(gauge);
+			Stroke stroke = getStroke();
+			g.setStroke(stroke);
+			g.setColor(Color.BLACK);
+			g.draw(gauge);
+		}
 	}
 
 	@Override

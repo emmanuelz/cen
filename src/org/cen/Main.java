@@ -6,8 +6,13 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -21,11 +26,16 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -33,12 +43,15 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -63,9 +76,15 @@ import org.cen.ui.gameboard.elements.trajectory.XYParser;
 import org.cen.ui.trajectories.DisplayedTrajectory;
 
 public class Main implements IGameBoardEventListener {
+	private static final String FIELD_DELIMITOR = ";";
+
 	private static final int HEIGHT_LISTS = 160;
 
+	private static final int MATCH_DURATION = 900;
+
 	private static final int WIDTH_LISTS = 200;
+
+	private static final String WORKSPACE_TRAJECTORIES = "workspace\\trajectories.txt";
 
 	/**
 	 * @param args
@@ -100,6 +119,7 @@ public class Main implements IGameBoardEventListener {
 	public Main() {
 		super();
 		initGUI();
+		load();
 	}
 
 	private void addButton(Container c, Action action) {
@@ -118,11 +138,8 @@ public class Main implements IGameBoardEventListener {
 		index = selection.getMinSelectionIndex();
 		IInputFile gauge = gaugesController.getListModel().getElementAt(index);
 
-		DefaultListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController.getListModel();
-		int start = model.getSize();
-
-		DisplayedTrajectory trajectory = new DisplayedTrajectory(path.getName(), gauge.getName(), currentTrajectory);
-		model.addElement(trajectory);
+		DisplayedTrajectory trajectory = new DisplayedTrajectory(path, gauge, currentTrajectory);
+		addDisplayedTrajectory(trajectory);
 
 		gameBoard.removeElements(currentTrajectory.getName());
 
@@ -132,10 +149,16 @@ public class Main implements IGameBoardEventListener {
 		selection = gaugesController.getSelectionModel();
 		selection.clearSelection();
 
-		selection = elementsController.getSelectionModel();
-		selection.addSelectionInterval(start, start);
-
 		updateGameBoard();
+	}
+
+	private void addDisplayedTrajectory(DisplayedTrajectory trajectory) {
+		DefaultListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController.getListModel();
+		int start = model.getSize();
+		model.addElement(trajectory);
+
+		ListSelectionModel selection = elementsController.getSelectionModel();
+		selection.addSelectionInterval(start, start);
 	}
 
 	private void addElementsList(Container c) {
@@ -170,6 +193,14 @@ public class Main implements IGameBoardEventListener {
 		model.addElement(file);
 	}
 
+	private void addGameBoard(Container c) {
+		gameBoard = new GameBoard2014();
+		gameBoardView = new GameBoardView(gameBoard);
+		gameBoardView.setPreferredSize(new Dimension(640, 480));
+		gameBoardView.addGameBoardEventListener(this);
+		c.add(gameBoardView, BorderLayout.CENTER);
+	}
+
 	private void addGaugesList(Container c) {
 		InputFilesFactory gaugesFilesFactory = new InputFilesFactory();
 		gaugesController = createList("gauges", "/org/cen/test/gauges", gaugesFilesFactory, InputFileType.GAUGE);
@@ -200,6 +231,68 @@ public class Main implements IGameBoardEventListener {
 		statusBarLabel = new JLabel();
 		statusBarLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		statusBar.add(statusBarLabel);
+	}
+
+	private void addTimePanel(Container c) {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+
+		final JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, MATCH_DURATION, 0);
+		final JLabel timeLabel = new JLabel("0 s");
+		JButton playButton = new JButton("play");
+
+		panel.add(slider);
+		panel.add(Box.createRigidArea(new Dimension(10, 0)));
+		panel.add(timeLabel);
+		panel.add(Box.createRigidArea(new Dimension(10, 0)));
+		panel.add(playButton);
+
+		slider.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				int value = slider.getValue();
+				double timestamp = 0.1d * value;
+				setTimeStamp(timestamp);
+				timeLabel.setText(String.format("%.1f s", timestamp));
+			}
+		});
+
+		playButton.addActionListener(new ActionListener() {
+			final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+			private volatile ScheduledFuture<?> task = null;
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				class Player implements Runnable {
+					private long start = System.currentTimeMillis();
+					private int position = slider.getValue();
+
+					@Override
+					public void run() {
+						long now = System.currentTimeMillis();
+						long timestamp = (now - start) / 100 + position;
+						if (timestamp > MATCH_DURATION) {
+							task.cancel(false);
+							task = null;
+						}
+						slider.setValue((int) timestamp);
+					}
+
+					public void scheduleExecution() {
+						task = executor.scheduleAtFixedRate(this, 0, 100, TimeUnit.MILLISECONDS);
+					}
+				}
+
+				if (task != null) {
+					task.cancel(false);
+					task = null;
+				} else {
+					new Player().scheduleExecution();
+				}
+			}
+		});
+
+		c.add(panel, BorderLayout.SOUTH);
 	}
 
 	private void addTrajectoriesList(Container c) {
@@ -296,14 +389,9 @@ public class Main implements IGameBoardEventListener {
 		}
 
 		ITrajectoryPath path = (ITrajectoryPath) currentTrajectory;
+		IGauge gauge = loadGauge(file);
+		path.setGauge(gauge);
 
-		GaugeFactory factory = new GaugeFactory();
-		try (InputStream is = file.getInputStream()) {
-			Gauge gauge = factory.getGauge(is);
-			path.setGauge(gauge);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		updateGameBoard();
 	}
 
@@ -329,6 +417,26 @@ public class Main implements IGameBoardEventListener {
 		list.clearSelection();
 
 		updateGameBoard();
+	}
+
+	private IInputFile findGauge(String pathName) {
+		ListModel<IInputFile> model = gaugesController.getListModel();
+		return findInModel(model, pathName);
+	}
+
+	private IInputFile findInModel(ListModel<IInputFile> model, String pathName) {
+		for (int i = 0; i < model.getSize(); i++) {
+			IInputFile file = model.getElementAt(i);
+			if (file.getName().equals(pathName)) {
+				return file;
+			}
+		}
+		return null;
+	}
+
+	private IInputFile findPath(String pathName) {
+		ListModel<IInputFile> model = trajectoriesController.getListModel();
+		return findInModel(model, pathName);
 	}
 
 	private DefaultListModel<IInputFile> getModel(IInputFile file) {
@@ -377,17 +485,27 @@ public class Main implements IGameBoardEventListener {
 	private void initGUI() {
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				save();
+				super.windowClosing(e);
+			}
+		});
 		Container c = frame.getContentPane();
 		c.setLayout(new BorderLayout(10, 10));
 
-		gameBoard = new GameBoard2014();
-		gameBoardView = new GameBoardView(gameBoard);
-		gameBoardView.setPreferredSize(new Dimension(640, 480));
-		gameBoardView.addGameBoardEventListener(this);
-		c.add(gameBoardView, BorderLayout.CENTER);
+		JPanel centerPanel = new JPanel();
+		centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.PAGE_AXIS));
+
+		addGameBoard(centerPanel);
+		addTimePanel(centerPanel);
 
 		addStatusBar(c);
 		addTrajectoriesPanel(c);
+
+		c.add(centerPanel, BorderLayout.CENTER);
+
 		frame.pack();
 		frame.setVisible(true);
 	}
@@ -400,10 +518,48 @@ public class Main implements IGameBoardEventListener {
 		return b;
 	}
 
+	private void load() {
+		String dir = System.getProperty("user.dir");
+		File file = new File(dir, WORKSPACE_TRAJECTORIES);
+		try (FileReader fr = new FileReader(file); Scanner scanner = new Scanner(fr)) {
+			scanner.useDelimiter("[;\r\n]+");
+			while (scanner.hasNext()) {
+				String pathName = scanner.next();
+				String gaugeName = scanner.next();
+				IInputFile pathFile = findPath(pathName);
+				IInputFile gaugeFile = findGauge(gaugeName);
+
+				if (pathFile == null || gaugeFile == null) {
+					continue;
+				}
+
+				ITrajectoryPath element = loadTrajectory(pathFile);
+				IGauge gauge = loadGauge(gaugeFile);
+				element.setGauge(gauge);
+
+				DisplayedTrajectory trajectory = new DisplayedTrajectory(pathFile, gaugeFile, (IGameBoardElement) element);
+				addDisplayedTrajectory(trajectory);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private IGauge loadGauge(IInputFile file) {
+		GaugeFactory factory = new GaugeFactory();
+		try (InputStream is = file.getInputStream()) {
+			IGauge gauge = factory.getGauge(is);
+			return gauge;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	private ITrajectoryPath loadTrajectory(IInputFile file) {
 		ITrajectoryPath trajectory = null;
 		String name = file.getName();
-		XYParser parser = new XYParser(";");
+		XYParser parser = new XYParser(FIELD_DELIMITOR);
 		TextTrajectoryFactory factory = new TextTrajectoryFactory(parser);
 		try (InputStream is = file.getInputStream()) {
 			trajectory = factory.getTrajectoryPath(name, is);
@@ -424,6 +580,28 @@ public class Main implements IGameBoardEventListener {
 	protected void removeFile(InputFile file) {
 		DefaultListModel<IInputFile> model = getModel(file);
 		model.removeElement(file);
+	}
+
+	private void save() {
+		ListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController.getListModel();
+		String dir = System.getProperty("user.dir");
+		File file = new File(dir, WORKSPACE_TRAJECTORIES);
+		try (FileWriter fw = new FileWriter(file)) {
+			for (int i = 0; i < model.getSize(); i++) {
+				DisplayedTrajectory trajectory = model.getElementAt(i);
+				IInputFile path = trajectory.getPathFile();
+				IInputFile gauge = trajectory.getGaugeFile();
+				String s = path.getName() + FIELD_DELIMITOR + gauge.getName() + "\r\n";
+				fw.write(s);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected void setTimeStamp(double timestamp) {
+		gameBoardView.setTimestamp(timestamp);
+		updateGameBoard();
 	}
 
 	private void updateDisplayedElements(IInputFile file, InputFileType type) {
@@ -503,15 +681,20 @@ public class Main implements IGameBoardEventListener {
 		});
 	}
 
-	protected void updateTrajectory(DisplayedTrajectory trajectory, boolean display) {
-		List<IGameBoardElement> elements = gameBoard.getElements();
-		IGameBoardElement element = trajectory.getElement();
-		if (display && !elements.contains(element)) {
-			elements.add(element);
-		} else if (!display) {
-			elements.remove(element);
-		}
-		updateGameBoard();
+	protected void updateTrajectory(final DisplayedTrajectory trajectory, final boolean display) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				List<IGameBoardElement> elements = gameBoard.getElements();
+				IGameBoardElement element = trajectory.getElement();
+				if (display && !elements.contains(element)) {
+					elements.add(element);
+				} else if (!display) {
+					elements.remove(element);
+				}
+				updateGameBoard();
+			}
+		});
 	}
 
 	protected void watchDirectory(File directory, final InputFileType type) {

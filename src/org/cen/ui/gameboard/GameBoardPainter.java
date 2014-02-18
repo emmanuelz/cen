@@ -47,6 +47,8 @@ public class GameBoardPainter {
 	// protected List<ShapeData> shapes = new ArrayList<ShapeData>();
 
 	protected Dimension size;
+	private double timestamp = 0.0d;
+
 	private AffineTransform transform;
 
 	private AffineTransform transformInv;
@@ -83,6 +85,16 @@ public class GameBoardPainter {
 	// public void clearShapes() {
 	// shapes.clear();
 	// }
+
+	public void adjustPosition(int dx, int dy) {
+		// convert pixels to real coordinates
+		double tx = dx / transform.getScaleX();
+		// screen coordinates are indirect, y must be inverted
+		double ty = -dy / transform.getScaleX();
+		// adjust transform and update inverse
+		transform.translate(tx, ty);
+		updateInverseTransform();
+	}
 
 	public void adjustZoom(int increments, Point position) {
 		// zoom factor from increments
@@ -135,6 +147,10 @@ public class GameBoardPainter {
 
 	public Dimension getSize() {
 		return size;
+	}
+
+	public double getTimestamp() {
+		return timestamp;
 	}
 
 	/**
@@ -318,12 +334,20 @@ public class GameBoardPainter {
 	// }
 
 	private void paintElement(IGameBoardElement e, Graphics2D g2d, AffineTransform t) {
-		e.paint(g2d);
+		if (e instanceof IGameBoardTimedElement) {
+			((IGameBoardTimedElement) e).paint(g2d, timestamp);
+		} else {
+			e.paint(g2d);
+		}
 		g2d.setTransform(t);
 		Point2D point = e.getPosition();
 		Point2D p = transform.transform(point, null);
 		g2d.translate(p.getX(), p.getY());
-		e.paintUnscaled(g2d);
+		if (e instanceof IGameBoardTimedElement) {
+			((IGameBoardTimedElement) e).paintUnscaled(g2d, timestamp);
+		} else {
+			e.paintUnscaled(g2d);
+		}
 	}
 
 	public void setGameBoard(IGameBoardService gameBoard) {
@@ -360,22 +384,16 @@ public class GameBoardPainter {
 		updateInverseTransform();
 	}
 
+	public void setTimestamp(double timestamp) {
+		this.timestamp = timestamp;
+	}
+
 	private void updateInverseTransform() {
 		try {
 			transformInv = transform.createInverse();
 		} catch (NoninvertibleTransformException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public void adjustPosition(int dx, int dy) {
-		// convert pixels to real coordinates
-		double tx = dx / transform.getScaleX();
-		// screen coordinates are indirect, y must be inverted
-		double ty = -dy / transform.getScaleX();
-		// adjust transform and update inverse
-		transform.translate(tx, ty);
-		updateInverseTransform();
 	}
 
 	// /**

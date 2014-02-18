@@ -1,11 +1,11 @@
 package org.cen.ui.gameboard.elements.trajectory;
 
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-
 
 /**
  * Graphical representation of a bezier curve.
@@ -59,12 +59,32 @@ public class BezierCurve extends AbstractTrajectoryPath {
 		path.append(new Rectangle2D.Double(x - dimension.width / 2, y - dimension.height / 2, dimension.width, dimension.height), false);
 	}
 
+	@Override
+	public double getOrientation(double timestamp) {
+		return getOrientation();
+	}
+
 	public Shape getPath() {
 		return path;
 	}
 
 	@Override
+	public Point2D getPosition(double timestamp) {
+		return getPosition();
+	}
+
+	@Override
 	public Point2D[] getTrajectoryControlPoints() {
 		return new Point2D[] { controlPoint1, controlPoint2 };
+	}
+
+	@Override
+	public void paint(Graphics2D g, double timestamp) {
+		paint(g);
+	}
+
+	@Override
+	public void paintUnscaled(Graphics2D g, double timestamp) {
+		paintUnscaled(g);
 	}
 }

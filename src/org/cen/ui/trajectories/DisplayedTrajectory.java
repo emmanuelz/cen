@@ -1,20 +1,23 @@
 package org.cen.ui.trajectories;
 
+import org.cen.trajectories.IInputFile;
 import org.cen.ui.gameboard.IGameBoardElement;
 import org.cen.ui.gameboard.elements.trajectory.IGauge;
 import org.cen.ui.gameboard.elements.trajectory.ITrajectoryPath;
 
 public class DisplayedTrajectory {
 	private IGameBoardElement element;
-	private String gaugeLabel;
-	private String pathLabel;
+
+	private IInputFile gaugeFile;
+
+	private IInputFile pathFile;
 	private boolean visible;
 
-	public DisplayedTrajectory(String pathLabel, String gaugeLabel, IGameBoardElement element) {
+	public DisplayedTrajectory(IInputFile pathFile, IInputFile gaugeFile, IGameBoardElement element) {
 		super();
 		visible = true;
-		this.pathLabel = pathLabel;
-		this.gaugeLabel = gaugeLabel;
+		this.pathFile = pathFile;
+		this.gaugeFile = gaugeFile;
 		this.element = element;
 	}
 
@@ -28,12 +31,20 @@ public class DisplayedTrajectory {
 		return gauge;
 	}
 
+	public IInputFile getGaugeFile() {
+		return gaugeFile;
+	}
+
 	public String getGaugeLabel() {
-		return gaugeLabel;
+		return gaugeFile.getName();
+	}
+
+	public IInputFile getPathFile() {
+		return pathFile;
 	}
 
 	public String getPathLabel() {
-		return pathLabel;
+		return pathFile.getName();
 	}
 
 	public ITrajectoryPath getTrajectoryPath() {
@@ -55,6 +66,6 @@ public class DisplayedTrajectory {
 
 	@Override
 	public String toString() {
-		return pathLabel + "-" + gaugeLabel;
+		return getPathLabel() + "-" + getGaugeLabel();
 	}
 }
