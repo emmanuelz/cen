@@ -41,6 +41,10 @@ public class TrajectoryStroke implements Stroke {
 				double dy = thisY - lastY;
 				double angle = Math.atan2(dy, dx);
 				double distance = Math.sqrt(dx * dx + dy * dy);
+				if (distance == 0) {
+					it.next();
+					continue;
+				}
 				AffineTransform t = new AffineTransform();
 				double start = Math.min(angle, lastAngle);
 				double end = Math.max(angle, lastAngle);

@@ -100,15 +100,20 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 	}
 
 	protected void paintGauge(Graphics2D g) {
-		Shape gauge = getGauge().getGaugeShape();
-		if (gauge != null) {
-			g.setColor(Color.LIGHT_GRAY);
-			g.fill(gauge);
-			Stroke stroke = getStroke();
-			g.setStroke(stroke);
-			g.setColor(Color.BLACK);
-			g.draw(gauge);
+		IGauge gauge = getGauge();
+		if (gauge == null) {
+			return;
 		}
+		Shape gaugeShape = gauge.getGaugeShape();
+		if (gaugeShape == null) {
+			return;
+		}
+		g.setColor(Color.LIGHT_GRAY);
+		g.fill(gaugeShape);
+		Stroke stroke = getStroke();
+		g.setStroke(stroke);
+		g.setColor(Color.BLACK);
+		g.draw(gaugeShape);
 	}
 
 	@Override

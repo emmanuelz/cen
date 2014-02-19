@@ -14,6 +14,8 @@ public class XYParser extends AbstractTrajectoryParser {
 	private double lasty = 0;
 	private double lastAngle = 0;
 	private double timestamp = 0;
+	private double defaultLinearSpeed = 0.1;
+	private double defaultRotationSpeed = 0.1;
 
 	public XYParser() {
 		this(";");
@@ -29,17 +31,30 @@ public class XYParser extends AbstractTrajectoryParser {
 		Scanner s = new Scanner(line);
 		try {
 			s.useDelimiter(delimiter);
+
+			double linearSpeed = defaultLinearSpeed;
+			double rotationSpeed = defaultRotationSpeed;
+			double additionalTime = 0;
+
 			double x = s.nextDouble();
 			double y = s.nextDouble();
-			double linearSpeed = s.nextDouble();
-			double rotationSpeed = s.nextDouble();
-			addKeyFrame(x, y, linearSpeed, rotationSpeed);
+			if (s.hasNextDouble()) {
+				linearSpeed = s.nextDouble();
+			}
+			if (s.hasNextDouble()) {
+				rotationSpeed = s.nextDouble();
+			}
+			if (s.hasNextDouble()) {
+				additionalTime = s.nextDouble();
+			}
+
+			addKeyFrame(x, y, linearSpeed, rotationSpeed, additionalTime);
 		} finally {
 			s.close();
 		}
 	}
 
-	private void addKeyFrame(double x, double y, double linearSpeed, double rotationSpeed) {
+	private void addKeyFrame(double x, double y, double linearSpeed, double rotationSpeed, double additionalTime) {
 		double dx = x - lastx;
 		double dy = y - lasty;
 		double angle = Math.atan2(dy, dx);
@@ -50,28 +65,29 @@ public class XYParser extends AbstractTrajectoryParser {
 		if (frames.isEmpty()) {
 			KeyFrame frame = new KeyFrame(TrajectoryMovement.START, 0, initialAngle, 0, p, 0);
 			frames.add(frame);
+		} else {
+			double distance = p.distance(lastx, lasty);
+			double theta = Math.abs(angle - lastAngle) % Math.PI;
 
-			lastAngle = initialAngle;
-			lastx = x;
-			lasty = y;
+			// rotation
+			if (theta > MIN_ANGLE) {
+				timestamp += theta / (2.0 * Math.PI) / rotationSpeed;
+				KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, angle, rotationSpeed, new Point2D.Double(lastx, lasty), timestamp);
+				frames.add(frame);
+			}
 
-			return;
-		}
-
-		double distance = p.distance(lastx, lasty);
-		double theta = Math.abs(angle - lastAngle) % Math.PI;
-
-		// rotation
-		if (theta > MIN_ANGLE) {
-			timestamp += theta / (2.0 * Math.PI) / rotationSpeed;
-			KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, angle, rotationSpeed, new Point2D.Double(lastx, lasty), timestamp);
+			// straight line
+			timestamp += distance / linearSpeed;
+			KeyFrame frame = new KeyFrame(TrajectoryMovement.LINE, linearSpeed, angle, 0, p, timestamp);
 			frames.add(frame);
 		}
 
-		// straight line
-		timestamp += distance / linearSpeed;
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.LINE, linearSpeed, angle, 0, p, timestamp);
-		frames.add(frame);
+		// pause
+		if (additionalTime > 0) {
+			timestamp += additionalTime;
+			KeyFrame frame = new KeyFrame(TrajectoryMovement.NONE, 0, angle, 0, p, timestamp);
+			frames.add(frame);
+		}
 
 		lastx = x;
 		lasty = y;

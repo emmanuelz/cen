@@ -23,8 +23,11 @@ public class StraightLine extends AbstractTrajectoryPath {
 		path = new Path2D.Double();
 		path.moveTo(start.getX(), start.getY());
 		for (int i = 1; i < n; i++) {
-			Point2D p = frames.get(i).getPosition();
-			path.lineTo(p.getX(), p.getY());
+			KeyFrame frame = frames.get(i);
+			if (frame.getMovement() == TrajectoryMovement.LINE) {
+				Point2D p = frame.getPosition();
+				path.lineTo(p.getX(), p.getY());
+			}
 		}
 	}
 
