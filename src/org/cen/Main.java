@@ -264,16 +264,15 @@ public class Main implements IGameBoardEventListener {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				class Player implements Runnable {
-					private long start = System.currentTimeMillis();
 					private int position = slider.getValue();
+					private long start = System.currentTimeMillis();
 
 					@Override
 					public void run() {
 						long now = System.currentTimeMillis();
 						long timestamp = (now - start) / 100 + position;
 						if (timestamp > MATCH_DURATION) {
-							task.cancel(false);
-							task = null;
+							cancel();
 						}
 						slider.setValue((int) timestamp);
 					}
@@ -284,11 +283,18 @@ public class Main implements IGameBoardEventListener {
 				}
 
 				if (task != null) {
-					task.cancel(false);
-					task = null;
+					cancel();
 				} else {
 					new Player().scheduleExecution();
 				}
+			}
+
+			private void cancel() {
+				if (task == null) {
+					return;
+				}
+				task.cancel(false);
+				task = null;
 			}
 		});
 
@@ -327,6 +333,14 @@ public class Main implements IGameBoardEventListener {
 		});
 		addLabel(panel, "Displayed");
 		addElementsList(panel);
+		addButton(panel, new AbstractAction("remove") {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				removeSelectedTrajectory();
+			}
+		});
 	}
 
 	private ListController<IInputFile> createList(String directory, String packagePath, InputFilesFactory factory, InputFileType type) {
@@ -580,6 +594,23 @@ public class Main implements IGameBoardEventListener {
 	protected void removeFile(InputFile file) {
 		DefaultListModel<IInputFile> model = getModel(file);
 		model.removeElement(file);
+	}
+
+	protected void removeSelectedTrajectory() {
+		JList<DisplayedTrajectory> list = elementsController.getList();
+		DisplayedTrajectory trajectory = list.getSelectedValue();
+		if (trajectory == null) {
+			return;
+		}
+
+		DefaultListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController.getListModel();
+		model.removeElement(trajectory);
+
+		IGameBoardElement element = trajectory.getElement();
+		List<IGameBoardElement> elements = gameBoard.getElements();
+		elements.remove(element);
+
+		updateGameBoard();
 	}
 
 	private void save() {

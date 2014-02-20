@@ -63,7 +63,8 @@ public class XYParser extends AbstractTrajectoryParser {
 
 		// initial position
 		if (frames.isEmpty()) {
-			KeyFrame frame = new KeyFrame(TrajectoryMovement.START, 0, initialAngle, 0, p, 0);
+			angle = initialAngle;
+			KeyFrame frame = new KeyFrame(TrajectoryMovement.START, 0, angle, 0, p, 0);
 			frames.add(frame);
 		} else {
 			double distance = p.distance(lastx, lasty);
