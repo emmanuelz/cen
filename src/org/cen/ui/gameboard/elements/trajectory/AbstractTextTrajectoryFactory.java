@@ -1,6 +1,7 @@
 package org.cen.ui.gameboard.elements.trajectory;
 
 import java.io.InputStream;
+import java.text.ParseException;
 import java.util.Scanner;
 
 public abstract class AbstractTextTrajectoryFactory extends AbstractTrajectoryFactory {
@@ -12,7 +13,12 @@ public abstract class AbstractTextTrajectoryFactory extends AbstractTrajectoryFa
 			scanner.useDelimiter("\r\n?");
 			while (scanner.hasNext()) {
 				String line = scanner.next();
-				parser.parseLine(line);
+				try {
+					parser.parseLine(line);
+				} catch (ParseException e) {
+					System.out.println(e.getMessage());
+					System.out.println(line);
+				}
 			}
 		} finally {
 			scanner.close();

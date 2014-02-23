@@ -41,7 +41,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 
 	@Override
 	public double getOrientation() {
-		return getOrientation(0d);
+		return 0;
 	}
 
 	@Override
