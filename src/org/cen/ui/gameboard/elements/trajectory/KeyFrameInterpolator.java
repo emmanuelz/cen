@@ -5,6 +5,8 @@ import java.awt.geom.Point2D.Double;
 import java.util.Collections;
 import java.util.List;
 
+import org.cen.math.Angle;
+
 public class KeyFrameInterpolator {
 	private class KeyFrameSearch extends KeyFrame {
 		public KeyFrameSearch(double timestamp) {
@@ -48,10 +50,11 @@ public class KeyFrameInterpolator {
 	private KeyFrame interpolateRotation(KeyFrame start, KeyFrame end, double timestamp) {
 		double startAngle = start.getOrientation();
 		double endAngle = end.getOrientation();
+		double theta = Angle.getRotationAngle(startAngle, endAngle);
 		double ds = start.getTimestamp();
 		double duration = end.getTimestamp() - ds;
 		double d = (timestamp - ds) / duration;
-		double angle = startAngle + d * (endAngle - startAngle);
+		double angle = startAngle + d * theta;
 		Point2D p = start.getPosition();
 
 		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, angle, start.getRotationSpeed(), p, timestamp);

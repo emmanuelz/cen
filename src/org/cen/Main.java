@@ -82,6 +82,10 @@ public class Main implements IGameBoardEventListener {
 
 	private static final int MATCH_DURATION = 900;
 
+	private static final String TXT_PLAY = "play";
+
+	private static final String TXT_STOP = "stop";
+
 	private static final int WIDTH_LISTS = 200;
 
 	private static final String WORKSPACE_TRAJECTORIES = "workspace\\trajectories.txt";
@@ -239,7 +243,7 @@ public class Main implements IGameBoardEventListener {
 
 		final JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, MATCH_DURATION, 0);
 		final JLabel timeLabel = new JLabel("0 s");
-		JButton playButton = new JButton("play");
+		final JButton playButton = new JButton(TXT_PLAY);
 
 		panel.add(slider);
 		panel.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -262,7 +266,7 @@ public class Main implements IGameBoardEventListener {
 			private volatile ScheduledFuture<?> task = null;
 
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
+			public void actionPerformed(ActionEvent e) {
 				class Player implements Runnable {
 					private int position = slider.getValue();
 					private long start = System.currentTimeMillis();
@@ -283,8 +287,10 @@ public class Main implements IGameBoardEventListener {
 				}
 
 				if (task != null) {
+					playButton.setText(TXT_PLAY);
 					cancel();
 				} else {
+					playButton.setText(TXT_STOP);
 					new Player().scheduleExecution();
 				}
 			}
@@ -613,6 +619,18 @@ public class Main implements IGameBoardEventListener {
 		updateGameBoard();
 	}
 
+	private void replaceElement(final IGameBoardElement oldElement, final IGameBoardElement newElement) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				List<IGameBoardElement> elements = gameBoard.getElements();
+				elements.remove(oldElement);
+				elements.add(newElement);
+				updateGameBoard();
+			}
+		});
+	}
+
 	private void save() {
 		ListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController.getListModel();
 		String dir = System.getProperty("user.dir");
@@ -688,12 +706,10 @@ public class Main implements IGameBoardEventListener {
 				e.setGauge(gauge);
 
 				// update display
-				updateTrajectory(t, false);
-				t.setElement((IGameBoardElement) e);
-				boolean display = t.isVisible();
-				if (display) {
-					updateTrajectory(t, true);
-				}
+				IGameBoardElement oldElement = t.getElement();
+				IGameBoardElement newElement = (IGameBoardElement) e;
+				t.setElement(newElement);
+				replaceElement(oldElement, newElement);
 			}
 		}
 	}

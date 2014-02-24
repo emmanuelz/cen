@@ -6,6 +6,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import org.cen.math.Angle;
+
 public class XYParser extends AbstractTrajectoryParser {
 	private class CommonData {
 		double additionalTime = 0;
@@ -144,7 +146,7 @@ public class XYParser extends AbstractTrajectoryParser {
 		}
 
 		double distance = p.distance(lastx, lasty);
-		double theta = Math.abs(angle - lastAngle) % Math.PI;
+		double theta = Math.abs(Angle.getRotationAngle(lastAngle, angle));
 
 		// rotation
 		if (theta > MIN_ANGLE && distance > MIN_DISTANCE) {

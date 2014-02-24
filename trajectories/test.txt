@@ -1,20 +1,22 @@
-// Chaque ligne représente un mouvement
-// Paramètres :
+// Chaque ligne reprÃ©sente un mouvement
+// ParamÃ¨tres :
 //   - t : type de trajectoire
-//   - x;y : coordonnées x;y du point de destination en mm
-//   - o : angle de l'orientation en degrés
-//   - vl : vitesse linéaire en mm/s
+//   - x;y : coordonnÃ©es x;y du point de destination en mm
+//   - o : angle de l'orientation en degrÃ©s
+//   - vl : vitesse linÃ©aire en mm/s
 //   - va : vitesse angulaire en tour/s
-//   - cx1;cy1, ..., cxn;cyn: coordonnées x;y du n-ième point de contrôle en mm
-//   - ta : temps additionnel en fin de mouvement en s (correspond à la durée d'une action, d'un temps d'attente, etc.) 
-// Unités : distances en mm, temps en s, angles en degrés
-// Axes : x = largeur, y = longueur, repère direct (angle 0° correspond à au sens des x croissants, 90° au sens des y croissants)
+//   - cx1;cy1, ..., cxn;cyn: coordonnÃ©es x;y du n-iÃ¨me point de contrÃ´le en mm
+//   - ta : temps additionnel en fin de mouvement en s (correspond Ã  la durÃ©e d'une action, d'un temps d'attente, etc.) 
+// UnitÃ©s : distances en mm, temps en s, angles en degrÃ©s
+// Axes : x = largeur, y = longueur, repÃ¨re direct (angle 0Â° correspond au sens des x croissants, 90Â° au sens des y croissants)
 // Types de trajectoires :
-//   - i : positionnement et angle initiaux, vitesses par défaut : t;x;y;o;vl;va;ta
+//   - i : positionnement et angle initiaux, vitesses par dÃ©faut : t;x;y;o;vl;va;ta
 //   - s : segment : t;x;y;vl;va;ta
-//   - b : courbe de Bézier quadratique : t;x;y;cx1;cy1;cx2;cy2;vl;va;ta
+//   - b : courbe de BÃ©zier quadratique : t;x;y;cx1;cy1;cx2;cy2;vl;va;ta
 
-i;200;200;45;200;0,2;2
-s;300;900
-s;1400;1300
-s;1500;2600
+i;250;200;45;200;0,2;2
+s;600;400
+s;1600;400
+s;1600;2600
+s;600;2600
+s;600;400
