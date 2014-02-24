@@ -1,0 +1,2 @@
+- cône détection
+- couleur du robot

@@ -50,7 +50,7 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 			}
 			Shape p = getPath();
 			Shape g = gauge.getGaugeShape();
-			TrajectoryStroke ts = new TrajectoryStroke(g);
+			TrajectoryStroke ts = new TrajectoryStroke(g, initialAngle);
 			trajectoryGauge = ts.createStrokedShape(p);
 		}
 		return trajectoryGauge;
