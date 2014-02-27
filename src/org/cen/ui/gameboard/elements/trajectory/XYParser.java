@@ -52,7 +52,44 @@ public class XYParser extends AbstractTrajectoryParser {
 	}
 
 	private void parseBezier(Scanner s) {
-		// TODO Auto-generated method stub
+		// final position
+		double x = s.nextDouble();
+		double y = s.nextDouble();
+		// control point 1
+		double cx1 = s.nextDouble();
+		double cy1 = s.nextDouble();
+		// control point 2
+		double cx2 = s.nextDouble();
+		double cy2 = s.nextDouble();
+		CommonData data = parseCommon(s);
+
+		Point2D p = new Point2D.Double(x, y);
+		Point2D cp1 = new Point2D.Double(cx1, cy1);
+		Point2D cp2 = new Point2D.Double(cx2, cy2);
+
+		// start angle
+		double dx = cx1 - lastx;
+		double dy = cy1 - lasty;
+		double startAngle = Math.atan2(dy, dx);
+
+		// end angle
+		dx = x - cx2;
+		dy = y - cy2;
+		double endAngle = Math.atan2(dy, dx);
+
+		// initial rotation
+		double theta = Math.abs(Angle.getRotationAngle(lastAngle, startAngle));
+		if (theta > MIN_ANGLE) {
+			timestamp += getRotationDuration(theta, data.rotationSpeed);
+			Point2D last = new Point2D.Double(x, y);
+			KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, startAngle, data.rotationSpeed, last, timestamp);
+			frames.add(frame);
+		}
+
+		double distante = p.distance(lastx, lasty);
+		timestamp += distante / data.linearSpeed;
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.BEZIER, data.linearSpeed, endAngle, data.rotationSpeed, p, timestamp, cp1, cp2);
+		frames.add(frame);
 	}
 
 	private CommonData parseCommon(Scanner s) {
@@ -150,7 +187,7 @@ public class XYParser extends AbstractTrajectoryParser {
 
 		// rotation
 		if (theta > MIN_ANGLE && distance > MIN_DISTANCE) {
-			timestamp += theta / (2.0 * Math.PI) / data.rotationSpeed;
+			timestamp += getRotationDuration(theta, data.rotationSpeed);
 			KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, angle, data.rotationSpeed, new Point2D.Double(lastx, lasty), timestamp);
 			frames.add(frame);
 		}
@@ -166,5 +203,10 @@ public class XYParser extends AbstractTrajectoryParser {
 		lastx = x;
 		lasty = y;
 		lastAngle = angle;
+	}
+
+	private double getRotationDuration(double angle, double speed) {
+		double duration = angle / (2.0 * Math.PI) / speed;
+		return duration;
 	}
 }

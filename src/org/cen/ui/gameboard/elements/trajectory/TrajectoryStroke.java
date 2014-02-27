@@ -7,8 +7,10 @@ import java.awt.geom.Area;
 import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 
 import org.cen.math.Angle;
+import org.cen.math.Bezier;
 
 public class TrajectoryStroke implements Stroke {
 	private static final double MIN_SEGMENT_DISTANCE = 10.0;
@@ -34,7 +36,9 @@ public class TrajectoryStroke implements Stroke {
 
 	public Shape createStrokedShape(Shape shape) {
 		Area area = new Area();
-		PathIterator it = new FlatteningPathIterator(shape.getPathIterator(null), FLATNESS);
+		// PathIterator it = new
+		// FlatteningPathIterator(shape.getPathIterator(null), FLATNESS);
+		PathIterator it = shape.getPathIterator(null);
 		double points[] = new double[6];
 		double lastX = 0, lastY = 0;
 		double thisX = 0, thisY = 0;
@@ -81,6 +85,33 @@ public class TrajectoryStroke implements Stroke {
 					addArea(area, t, lastX, lastY, angle, i, 0);
 				}
 				addArea(area, t, lastX, lastY, angle, distance, 0);
+
+				lastX = thisX;
+				lastY = thisY;
+				lastAngle = angle;
+				break;
+
+			case PathIterator.SEG_CUBICTO:
+				angle = lastAngle;
+				double cx1 = points[0];
+				double cy1 = points[1];
+				double cx2 = points[2];
+				double cy2 = points[3];
+				thisX = points[4];
+				thisY = points[5];
+				Point2D s = new Point2D.Double(lastX, lastY);
+				Point2D cp1 = new Point2D.Double(cx1, cy1);
+				Point2D cp2 = new Point2D.Double(cx2, cy2);
+				Point2D e = new Point2D.Double(thisX, thisY);
+
+				t = new AffineTransform();
+				distance = s.distance(e);
+				double step = STEP_DISTANCE / distance;
+				for (double u = 0; u <= 1.0001; u += step) {
+					Point2D p = Bezier.getPoint(u, s, cp1, cp2, e);
+					angle = Bezier.getAngle(u, s, cp1, cp2, e);
+					addArea(area, t, p.getX(), p.getY(), angle, 0, 0);
+				}
 
 				lastX = thisX;
 				lastY = thisY;

@@ -24,9 +24,19 @@ public class StraightLine extends AbstractTrajectoryPath {
 		path.moveTo(start.getX(), start.getY());
 		for (int i = 1; i < n; i++) {
 			KeyFrame frame = frames.get(i);
-			if (frame.getMovement() == TrajectoryMovement.LINE) {
+			TrajectoryMovement movement = frame.getMovement();
+			switch (movement) {
+			case LINE:
 				Point2D p = frame.getPosition();
 				path.lineTo(p.getX(), p.getY());
+				break;
+			case BEZIER:
+				p = frame.getPosition();
+				Point2D[] cp = frame.getControlPoints();
+				path.curveTo(cp[0].getX(), cp[0].getY(), cp[1].getX(), cp[1].getY(), p.getX(), p.getY());
+				break;
+			default:
+				break;
 			}
 		}
 	}

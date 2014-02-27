@@ -1,5 +1,6 @@
 package org.cen.ui.gameboard.elements.trajectory;
 
+import java.awt.Color;
 import java.awt.Shape;
 
 /**
@@ -10,4 +11,6 @@ import java.awt.Shape;
  */
 public interface IGauge {
 	public Shape getGaugeShape();
+
+	public Color getGaugeColor();
 }

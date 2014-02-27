@@ -42,6 +42,10 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 		return gauge;
 	}
 
+	public Color getGaugeColor() {
+		return GAUGE_COLOR;
+	}
+
 	@Override
 	public Shape getGaugeShape() {
 		if (trajectoryGauge == null) {
@@ -108,7 +112,8 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 		if (gaugeShape == null) {
 			return;
 		}
-		g.setColor(Color.LIGHT_GRAY);
+		Color gaugeColor = gauge.getGaugeColor();
+		g.setColor(gaugeColor);
 		g.fill(gaugeShape);
 		Stroke stroke = getStroke();
 		g.setStroke(stroke);

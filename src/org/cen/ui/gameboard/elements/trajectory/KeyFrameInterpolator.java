@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.cen.math.Angle;
+import org.cen.math.Bezier;
 
 public class KeyFrameInterpolator {
 	private class KeyFrameSearch extends KeyFrame {
@@ -20,6 +21,8 @@ public class KeyFrameInterpolator {
 			return interpolateRotation(start, end, timestamp);
 		case LINE:
 			return interpolateStraightLine(start, end, timestamp);
+		case BEZIER:
+			return interpolateBezier(start, end, timestamp);
 		default:
 			return start;
 		}
@@ -45,6 +48,19 @@ public class KeyFrameInterpolator {
 			KeyFrame frame = interpolate(start, end, timestamp);
 			return frame;
 		}
+	}
+
+	private KeyFrame interpolateBezier(KeyFrame start, KeyFrame end, double timestamp) {
+		double ds = start.getTimestamp();
+		double duration = end.getTimestamp() - ds;
+		double d = (timestamp - ds) / duration;
+		Point2D[] points = end.getControlPoints();
+		Point2D s = start.getPosition();
+		Point2D e = end.getPosition();
+		Point2D p = Bezier.getPoint(d, s, points[0], points[1], e);
+		double angle = Bezier.getAngle(d, s, points[0], points[1], e);
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.BEZIER, start.getMovementSpeed(), angle, 0, p, timestamp, points);
+		return frame;
 	}
 
 	private KeyFrame interpolateRotation(KeyFrame start, KeyFrame end, double timestamp) {
