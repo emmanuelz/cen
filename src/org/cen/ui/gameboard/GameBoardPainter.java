@@ -18,14 +18,13 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * Game board painter. This object draws the game board at the specified
- * dimensions into a given graphics object.
+ * Game board painter. This object draws the game board at the specified dimensions into a given graphics object.
  * 
  * @author Emmanuel ZURMELY
  */
 public class GameBoardPainter {
 
-	private static final double ZOOM_FACTOR = 1.2;
+	private static final double ZOOM_FACTOR = 0.2;
 
 	private final Set<GameBoardFlags> drawFlags;
 
@@ -96,9 +95,9 @@ public class GameBoardPainter {
 		updateInverseTransform();
 	}
 
-	public void adjustZoom(int increments, Point position) {
+	public void adjustZoom(double increments, Point position) {
 		// zoom factor from increments
-		double factor = ZOOM_FACTOR * Math.abs(increments);
+		double factor = 1 + ZOOM_FACTOR * Math.abs(increments);
 		if (increments > 0) {
 			factor = 1 / factor;
 		}

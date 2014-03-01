@@ -49,6 +49,10 @@ public class TrajectoryStroke implements Stroke {
 			type = it.currentSegment(points);
 			switch (type) {
 			case PathIterator.SEG_MOVETO:
+				// extra moveto are used for bckward moves
+				if (lastX == points[0] && lastY == points[1]) {
+					lastAngle += Math.PI;
+				}
 				lastX = points[0];
 				lastY = points[1];
 				break;

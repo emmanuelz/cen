@@ -27,6 +27,11 @@ public class StraightLine extends AbstractTrajectoryPath {
 			TrajectoryMovement movement = frame.getMovement();
 			switch (movement) {
 			case LINE:
+				// handle backward move by adding an extra moveto instruction
+				if (frame.getMovementSpeed() < 0) {
+					Point2D p = path.getCurrentPoint();
+					path.moveTo(p.getX(), p.getY());
+				}
 				Point2D p = frame.getPosition();
 				path.lineTo(p.getX(), p.getY());
 				break;

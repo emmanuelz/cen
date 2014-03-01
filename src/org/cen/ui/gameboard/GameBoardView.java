@@ -52,6 +52,7 @@ public class GameBoardView extends JPanel implements ComponentListener, MouseLis
 	public void componentResized(ComponentEvent e) {
 		Dimension size = getSize();
 		painter.setSize(size);
+		repaint();
 	}
 
 	@Override
@@ -112,7 +113,10 @@ public class GameBoardView extends JPanel implements ComponentListener, MouseLis
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		Point position = e.getPoint();
-		int factor = e.getWheelRotation();
+		double factor = e.getWheelRotation();
+		if (factor == 0) {
+			factor = e.getPreciseWheelRotation();
+		}
 		painter.adjustZoom(factor, position);
 		repaint();
 	}

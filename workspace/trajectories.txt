@@ -1,0 +1,2 @@
+test.txt;bernard.txt
+fresques.txt;robin.txt

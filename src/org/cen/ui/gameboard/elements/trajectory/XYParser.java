@@ -17,6 +17,8 @@ public class XYParser extends AbstractTrajectoryParser {
 
 	private static final double MIN_ANGLE = Math.toRadians(0.5);
 	private static final double MIN_DISTANCE = 0.1;
+	private double angleScale = 1;
+	private double angleTranslation = 0;
 	private double defaultLinearSpeed = 0.1;
 	private double defaultRotationSpeed = 0.1;
 	private String delimiter;
@@ -27,6 +29,10 @@ public class XYParser extends AbstractTrajectoryParser {
 	private double lastx = 0;
 	private double lasty = 0;
 	private double timestamp = 0;
+	private double xScale = 1;
+	private double xTranslation = 0;
+	private double yScale = 1;
+	private double yTranslation = 0;
 
 	public XYParser() {
 		this(";");
@@ -51,16 +57,21 @@ public class XYParser extends AbstractTrajectoryParser {
 		return path;
 	}
 
+	private double getRotationDuration(double angle, double speed) {
+		double duration = angle / (2.0 * Math.PI) / speed;
+		return duration;
+	}
+
 	private void parseBezier(Scanner s) {
 		// final position
-		double x = s.nextDouble();
-		double y = s.nextDouble();
+		double x = readX(s);
+		double y = readY(s);
 		// control point 1
-		double cx1 = s.nextDouble();
-		double cy1 = s.nextDouble();
+		double cx1 = readX(s);
+		double cy1 = readY(s);
 		// control point 2
-		double cx2 = s.nextDouble();
-		double cy2 = s.nextDouble();
+		double cx2 = readX(s);
+		double cy2 = readY(s);
 		CommonData data = parseCommon(s);
 
 		Point2D p = new Point2D.Double(x, y);
@@ -111,10 +122,9 @@ public class XYParser extends AbstractTrajectoryParser {
 			throw new ParseException("the initial position must be the first entry", 0);
 		}
 
-		double x = s.nextDouble();
-		double y = s.nextDouble();
-		double angle = s.nextDouble();
-		initialAngle = Math.toRadians(angle);
+		double x = readX(s);
+		double y = readY(s);
+		initialAngle = readAngle(s);
 		defaultLinearSpeed = s.nextDouble();
 		defaultRotationSpeed = s.nextDouble();
 		double additionalTime = 0;
@@ -158,6 +168,9 @@ public class XYParser extends AbstractTrajectoryParser {
 			case 'b':
 				parseBezier(s);
 				break;
+			case 't':
+				parseTransform(s);
+				break;
 			default:
 				throw new ParseException("unexpected value: " + type, 0);
 			}
@@ -167,13 +180,18 @@ public class XYParser extends AbstractTrajectoryParser {
 	}
 
 	private void parseSegment(Scanner s) throws ParseException {
-		double x = s.nextDouble();
-		double y = s.nextDouble();
+		double x = readX(s);
+		double y = readY(s);
 		CommonData data = parseCommon(s);
 
 		double dx = x - lastx;
 		double dy = y - lasty;
 		double angle = Math.atan2(dy, dx);
+
+		// if linear speed is negative, move backward
+		if (data.linearSpeed < 0) {
+			angle += Math.PI;
+		}
 
 		Point2D p = new Point2D.Double(x, y);
 
@@ -193,7 +211,7 @@ public class XYParser extends AbstractTrajectoryParser {
 		}
 
 		// straight line
-		timestamp += distance / data.linearSpeed;
+		timestamp += distance / Math.abs(data.linearSpeed);
 		KeyFrame frame = new KeyFrame(TrajectoryMovement.LINE, data.linearSpeed, angle, 0, p, timestamp);
 		frames.add(frame);
 
@@ -205,8 +223,34 @@ public class XYParser extends AbstractTrajectoryParser {
 		lastAngle = angle;
 	}
 
-	private double getRotationDuration(double angle, double speed) {
-		double duration = angle / (2.0 * Math.PI) / speed;
-		return duration;
+	private void parseTransform(Scanner s) {
+		xScale = s.nextDouble();
+		xTranslation = s.nextDouble();
+		yScale = s.nextDouble();
+		yTranslation = s.nextDouble();
+		angleScale = s.nextDouble();
+		angleTranslation = Math.toRadians(s.nextDouble());
+	}
+
+	private double readAngle(Scanner s) {
+		double angle = Math.toRadians(s.nextDouble());
+		angle *= angleScale;
+		angle += angleTranslation;
+		return angle;
+	}
+
+	private double readCoordinate(Scanner s, double scale, double translation) {
+		double c = s.nextDouble();
+		c *= scale;
+		c += translation;
+		return c;
+	}
+
+	private double readX(Scanner s) {
+		return readCoordinate(s, xScale, xTranslation);
+	}
+
+	private double readY(Scanner s) {
+		return readCoordinate(s, yScale, yTranslation);
 	}
 }

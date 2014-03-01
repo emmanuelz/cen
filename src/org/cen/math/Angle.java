@@ -10,7 +10,7 @@ public class Angle {
 		} else if (theta < -Math.PI) {
 			theta += PI2;
 		}
-		theta %= Math.PI;
+		theta %= 2.0 * Math.PI;
 		return theta;
 	}
 }
