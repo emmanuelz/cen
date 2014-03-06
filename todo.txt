@@ -1,2 +1,4 @@
 - cône détection
-- couleur du robot
+- couleur du robot : ok
+- affichage des libellés des éléments (à réactiver)
+

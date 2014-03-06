@@ -4,6 +4,7 @@
 // abscisses positives dans le sens de la marche avant
 // repère direct, unité mm
 
+//self.setColor(240, 240, 160, 0);
 path.moveTo(105, -45);
 path.lineTo(50, -95);
 path.lineTo(-50, -95);

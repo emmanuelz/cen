@@ -2,6 +2,7 @@ package org.cen.ui.gameboard;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -9,6 +10,7 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.NoninvertibleTransformException;
@@ -18,7 +20,8 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * Game board painter. This object draws the game board at the specified dimensions into a given graphics object.
+ * Game board painter. This object draws the game board at the specified
+ * dimensions into a given graphics object.
  * 
  * @author Emmanuel ZURMELY
  */
@@ -192,6 +195,9 @@ public class GameBoardPainter {
 					double theta = e.getOrientation();
 					g2d.rotate(theta);
 					switch (stage) {
+					case LABELS:
+						paintLabels(e, g2d, oldTransform);
+						break;
 					case OBJECTS:
 						paintElement(e, g2d, oldTransform);
 						g2d.setPaint(paint);
@@ -228,6 +234,23 @@ public class GameBoardPainter {
 			// }
 		} finally {
 			g2d.setTransform(oldTransform);
+		}
+	}
+
+	private void paintElement(IGameBoardElement e, Graphics2D g2d, AffineTransform t) {
+		if (e instanceof IGameBoardTimedElement) {
+			((IGameBoardTimedElement) e).paint(g2d, timestamp);
+		} else {
+			e.paint(g2d);
+		}
+		g2d.setTransform(t);
+		Point2D point = e.getPosition();
+		Point2D p = transform.transform(point, null);
+		g2d.translate(p.getX(), p.getY());
+		if (e instanceof IGameBoardTimedElement) {
+			((IGameBoardTimedElement) e).paintUnscaled(g2d, timestamp);
+		} else {
+			e.paintUnscaled(g2d);
 		}
 	}
 
@@ -332,21 +355,20 @@ public class GameBoardPainter {
 	// robotPainter.paint(g2d);
 	// }
 
-	private void paintElement(IGameBoardElement e, Graphics2D g2d, AffineTransform t) {
-		if (e instanceof IGameBoardTimedElement) {
-			((IGameBoardTimedElement) e).paint(g2d, timestamp);
-		} else {
-			e.paint(g2d);
-		}
-		g2d.setTransform(t);
+	private void paintLabels(IGameBoardElement e, Graphics2D g, AffineTransform t) {
+		g.setTransform(t);
 		Point2D point = e.getPosition();
 		Point2D p = transform.transform(point, null);
-		g2d.translate(p.getX(), p.getY());
-		if (e instanceof IGameBoardTimedElement) {
-			((IGameBoardTimedElement) e).paintUnscaled(g2d, timestamp);
-		} else {
-			e.paintUnscaled(g2d);
-		}
+
+		String name = e.getName();
+
+		Font font = g.getFont().deriveFont(10f);
+		g.setFont(font);
+
+		FontRenderContext context = g.getFontRenderContext();
+		Rectangle2D rectangle = font.getStringBounds(name, context);
+		g.translate(p.getX() - rectangle.getCenterX(), p.getY() - rectangle.getCenterY());
+		g.drawString(name, 0, 0);
 	}
 
 	public void setGameBoard(IGameBoardService gameBoard) {

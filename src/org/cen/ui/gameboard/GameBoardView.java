@@ -11,6 +11,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
+import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.event.EventListenerList;
@@ -58,6 +59,12 @@ public class GameBoardView extends JPanel implements ComponentListener, MouseLis
 	@Override
 	public void componentShown(ComponentEvent e) {
 		// TODO Auto-generated method stub
+	}
+
+	public boolean getDisplayLabels() {
+		Set<GameBoardFlags> flags = painter.getDrawFlags();
+		boolean b = flags.contains(GameBoardFlags.LABELS);
+		return b;
 	}
 
 	@Override
@@ -132,6 +139,15 @@ public class GameBoardView extends JPanel implements ComponentListener, MouseLis
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		painter.paint(g);
+	}
+
+	public void setDisplayLabels(boolean displayLabels) {
+		Set<GameBoardFlags> flags = painter.getDrawFlags();
+		if (displayLabels) {
+			flags.add(GameBoardFlags.LABELS);
+		} else {
+			flags.remove(GameBoardFlags.LABELS);
+		}
 	}
 
 	public void setTimestamp(double timestamp) {

@@ -6,7 +6,6 @@ package org.cen.ui.gameboard;
  * @author Emmanuel ZURMELY
  */
 public enum GameBoardFlags {
-
 	/**
 	 * Flag for drawing the objects.
 	 */

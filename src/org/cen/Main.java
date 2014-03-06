@@ -39,9 +39,13 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.ListModel;
@@ -223,6 +227,26 @@ public class Main implements IGameBoardEventListener {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		c.add(label, gbc);
+	}
+
+	private void addMenu(JFrame frame) {
+		JMenuBar menu = new JMenuBar();
+
+		JMenu file = new JMenu("File");
+		menu.add(file);
+
+		Action action = getActionExit();
+		JMenuItem menuItem = new JMenuItem(action);
+		file.add(menuItem);
+
+		JMenu display = new JMenu("Display");
+		menu.add(display);
+
+		action = getActionShowElementsLabels();
+		menuItem = new JCheckBoxMenuItem(action);
+		display.add(menuItem);
+
+		frame.setJMenuBar(menu);
 	}
 
 	private void addStatusBar(Container c) {
@@ -459,6 +483,32 @@ public class Main implements IGameBoardEventListener {
 		return findInModel(model, pathName);
 	}
 
+	private Action getActionExit() {
+		Action action = new AbstractAction("Exit") {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		};
+		return action;
+	}
+
+	private Action getActionShowElementsLabels() {
+		Action action = new AbstractAction("Name of the elements") {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean b = gameBoardView.getDisplayLabels();
+				gameBoardView.setDisplayLabels(!b);
+				updateGameBoard();
+			}
+		};
+		return action;
+	}
+
 	private DefaultListModel<IInputFile> getModel(IInputFile file) {
 		DefaultListModel<IInputFile> model = null;
 		switch (file.getType()) {
@@ -525,6 +575,8 @@ public class Main implements IGameBoardEventListener {
 		addTrajectoriesPanel(c);
 
 		c.add(centerPanel, BorderLayout.CENTER);
+
+		addMenu(frame);
 
 		frame.pack();
 		frame.setVisible(true);
