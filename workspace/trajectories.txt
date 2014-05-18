@@ -1,2 +1,1 @@
-test.txt;bernard.txt
-fresques.txt;robin.txt
+test lego.txt;robin.txt

@@ -64,10 +64,6 @@ public class TrajectoryStroke implements Stroke {
 				double dy = thisY - lastY;
 				double angle = Math.atan2(dy, dx);
 				double distance = Math.sqrt(dx * dx + dy * dy);
-				if (distance == 0) {
-					it.next();
-					continue;
-				}
 
 				AffineTransform t = new AffineTransform();
 				double theta = Angle.getRotationAngle(lastAngle, angle);
@@ -85,6 +81,13 @@ public class TrajectoryStroke implements Stroke {
 					addArea(area, t, lastX, lastY, i, 0, 0);
 				}
 
+				lastAngle = angle;
+
+				if (distance == 0) {
+					it.next();
+					continue;
+				}
+
 				for (int i = 0; i < distance; i += STEP_DISTANCE) {
 					addArea(area, t, lastX, lastY, angle, i, 0);
 				}
@@ -92,7 +95,6 @@ public class TrajectoryStroke implements Stroke {
 
 				lastX = thisX;
 				lastY = thisY;
-				lastAngle = angle;
 				break;
 
 			case PathIterator.SEG_CUBICTO:

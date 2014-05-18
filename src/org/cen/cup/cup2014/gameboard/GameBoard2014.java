@@ -72,7 +72,7 @@ public class GameBoard2014 extends AbstractGameBoard {
 		elements.add(new Tree("tree-yellow1", new Point2D.Double(1300, BOARD_HEIGHT), 0));
 		elements.add(new Tree("tree-yellow2", new Point2D.Double(BOARD_WIDTH, BOARD_HEIGHT - 700), Math.PI / 2));
 
-		elements.add(new CentralFireplace("fireplace-centre", new Point2D.Double(BOARD_WIDTH / 2, BOARD_HEIGHT / 2)));
+		elements.add(new CentralFireplace("fireplace-centre", new Point2D.Double(1050, BOARD_HEIGHT / 2)));
 		elements.add(new SideFireplace("fireplace-red", new Point2D.Double(BOARD_WIDTH, 0), 0));
 		elements.add(new SideFireplace("fireplace-yellow", new Point2D.Double(BOARD_WIDTH, BOARD_HEIGHT), Math.PI / 2));
 
