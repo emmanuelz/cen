@@ -19,6 +19,8 @@ public class StraightLine extends AbstractTrajectoryPath {
 		int n = frames.size();
 		start = frames.get(0).getPosition();
 		end = frames.get(n - 1).getPosition();
+		
+		boolean forward = true;
 
 		path = new Path2D.Double();
 		path.moveTo(start.getX(), start.getY());
@@ -27,10 +29,11 @@ public class StraightLine extends AbstractTrajectoryPath {
 			TrajectoryMovement movement = frame.getMovement();
 			switch (movement) {
 			case LINE:
-				// handle backward move by adding an extra moveto instruction
-				if (frame.getMovementSpeed() < 0) {
+				// handles backward moves by adding an extra moveto instruction
+				if (forward == frame.getMovementSpeed() < 0) {
 					Point2D p = path.getCurrentPoint();
 					path.moveTo(p.getX(), p.getY());
+					forward = !forward;
 				}
 				Point2D p = frame.getPosition();
 				path.lineTo(p.getX(), p.getY());
