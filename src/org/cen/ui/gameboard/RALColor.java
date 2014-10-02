@@ -3,7 +3,6 @@ package org.cen.ui.gameboard;
 import java.awt.Color;
 
 public class RALColor {
-
 	// Yellow
 	public static final Color RAL_1023 = new Color(252, 189, 31);
 
@@ -30,4 +29,7 @@ public class RALColor {
 
 	// Pebble grey
 	public static final Color RAL_7032 = new Color(184, 183, 153);
+
+	// Sky Blue
+	public static final Color RAL_5015 = new Color(23, 97, 171);
 }

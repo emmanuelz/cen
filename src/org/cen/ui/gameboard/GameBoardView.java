@@ -16,8 +16,6 @@ import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.event.EventListenerList;
 
-import org.cen.cup.cup2014.gameboard.GameBoard2014;
-
 public class GameBoardView extends JPanel implements ComponentListener, MouseListener, MouseMotionListener, MouseWheelListener {
 	private static final long serialVersionUID = 1L;
 	private int buttonPressed;
@@ -25,7 +23,7 @@ public class GameBoardView extends JPanel implements ComponentListener, MouseLis
 	private EventListenerList listeners = new EventListenerList();
 	private GameBoardPainter painter;
 
-	public GameBoardView(GameBoard2014 gameBoard) {
+	public GameBoardView(AbstractGameBoard gameBoard) {
 		super();
 		addComponentListener(this);
 		addMouseListener(this);

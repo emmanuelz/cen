@@ -59,13 +59,14 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.cen.cup.cup2014.gameboard.GameBoard2014;
+import org.cen.cup.cup2015.gameboard.GameBoard2015;
 import org.cen.trajectories.IInputFile;
 import org.cen.trajectories.InputFile;
 import org.cen.trajectories.InputFileType;
 import org.cen.trajectories.InputFilesFactory;
 import org.cen.ui.CheckListController;
 import org.cen.ui.ListController;
+import org.cen.ui.gameboard.AbstractGameBoard;
 import org.cen.ui.gameboard.GameBoardMouseMoveEvent;
 import org.cen.ui.gameboard.GameBoardView;
 import org.cen.ui.gameboard.IGameBoardElement;
@@ -110,7 +111,7 @@ public class Main implements IGameBoardEventListener {
 
 	private CheckListController<DisplayedTrajectory> elementsController;
 
-	private GameBoard2014 gameBoard;
+	private AbstractGameBoard gameBoard;
 
 	private GameBoardView gameBoardView;
 
@@ -202,7 +203,7 @@ public class Main implements IGameBoardEventListener {
 	}
 
 	private void addGameBoard(Container c) {
-		gameBoard = new GameBoard2014();
+		gameBoard = new GameBoard2015();
 		gameBoardView = new GameBoardView(gameBoard);
 		gameBoardView.setPreferredSize(new Dimension(640, 480));
 		gameBoardView.addGameBoardEventListener(this);
