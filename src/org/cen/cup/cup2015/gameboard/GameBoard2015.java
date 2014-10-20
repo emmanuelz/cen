@@ -8,7 +8,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.cen.cup.cup2015.gameboard.elements.CentralArea;
+import org.cen.cup.cup2015.gameboard.elements.FilmEditingArea;
+import org.cen.cup.cup2015.gameboard.elements.PathLine;
 import org.cen.cup.cup2015.gameboard.elements.StartArea;
+import org.cen.cup.cup2015.gameboard.elements.StepsArea;
 import org.cen.ui.gameboard.AbstractGameBoard;
 import org.cen.ui.gameboard.GameBoardElementsComparator;
 import org.cen.ui.gameboard.IGameBoardElement;
@@ -29,6 +33,9 @@ public class GameBoard2015 extends AbstractGameBoard {
 	public static final double BOARD_MIDDLE_WIDTH = BOARD_WIDTH / 2.0d;
 
 	public static final double BORDER_WIDTH = 22d;
+
+	public static final Color COLOR_A = RALColor.RAL_1023;
+	public static final Color COLOR_B = RALColor.RAL_6018;
 
 	public static double symetrize(boolean symetric, double value) {
 		if (symetric) {
@@ -69,97 +76,23 @@ public class GameBoard2015 extends AbstractGameBoard {
 
 	private void addElements() {
 		elements.add(new Board(COLOR_BOARD, BOARD_WIDTH, BOARD_HEIGHT));
-		elements.add(new Border("border", BOARD_HEIGHT, BORDER_WIDTH, Color.WHITE, new Point2D.Double(BOARD_WIDTH + BORDER_WIDTH, 0), Math.PI / 2, 0));
 
-		// elements.add(new Tree("tree-red1", new Point2D.Double(1300, 0), 0));
-		// elements.add(new Tree("tree-red2", new Point2D.Double(BOARD_WIDTH,
-		// 700), Math.PI / 2));
-		// elements.add(new Tree("tree-yellow1", new Point2D.Double(1300,
-		// BOARD_HEIGHT), 0));
-		// elements.add(new Tree("tree-yellow2", new Point2D.Double(BOARD_WIDTH,
-		// BOARD_HEIGHT - 700), Math.PI / 2));
-		//
-		// elements.add(new CentralFireplace("fireplace-centre", new
-		// Point2D.Double(1050, BOARD_HEIGHT / 2)));
-		// elements.add(new SideFireplace("fireplace-red", new
-		// Point2D.Double(BOARD_WIDTH, 0), 0));
-		// elements.add(new SideFireplace("fireplace-yellow", new
-		// Point2D.Double(BOARD_WIDTH, BOARD_HEIGHT), Math.PI / 2));
-		//
-		// elements.add(new Basket("basket-red", new Point2D.Double(0,
-		// BOARD_HEIGHT - 400 - 700), RALColor.RAL_3020));
-		// elements.add(new Basket("basket-yellow", new Point2D.Double(0, 400),
-		// RALColor.RAL_1023));
-		//
-		// elements.add(new MobileTorch("torch-mobile-red", new
-		// Point2D.Double(1100, 900)));
-		// elements.add(new MobileTorch("torch-mobile-yellow", new
-		// Point2D.Double(1100, BOARD_HEIGHT - 900)));
-		// elements.add(new FixedTorch("torch-fixed-red1", new
-		// Point2D.Double(800, 0), 0));
-		// elements.add(new FixedTorch("torch-fixed-red2", new
-		// Point2D.Double(BOARD_WIDTH, 1300), Math.PI / 2));
-		// elements.add(new FixedTorch("torch-fixed-yellow1", new
-		// Point2D.Double(800, BOARD_HEIGHT), Math.PI));
-		// elements.add(new FixedTorch("torch-fixed-yellow2", new
-		// Point2D.Double(BOARD_WIDTH, BOARD_HEIGHT - 1300), Math.PI / 2));
-		//
-		// elements.add(new Fire("fire-torch-fixed-red1", new
-		// Point2D.Double(800, Fire.HEIGHT / 2), 0));
-		// elements.add(new Fire("fire-torch-fixed-red2", new
-		// Point2D.Double(BOARD_WIDTH - Fire.HEIGHT / 2, 1300), Math.PI / 2));
-		// elements.add(new Fire("fire-torch-fixed-yellow1", new
-		// Point2D.Double(800, BOARD_HEIGHT - Fire.HEIGHT / 2), Math.PI));
-		// elements.add(new Fire("fire-torch-fixed-yellow2", new
-		// Point2D.Double(BOARD_WIDTH - Fire.HEIGHT / 2, BOARD_HEIGHT - 1300),
-		// Math.PI / 2));
-		//
-		// elements.add(new Fire("fire-free-red1", new Point2D.Double(1100,
-		// 400), Math.PI / 2));
-		// elements.add(new Fire("fire-free-red2", new Point2D.Double(1600,
-		// 900), 0));
-		// elements.add(new Fire("fire-free-red3", new Point2D.Double(600, 900),
-		// 0));
-		// elements.add(new Fire("fire-free-yellow1", new Point2D.Double(1100,
-		// BOARD_HEIGHT - 400), Math.PI / 2));
-		// elements.add(new Fire("fire-free-yellow2", new Point2D.Double(1600,
-		// BOARD_HEIGHT - 900), 0));
-		// elements.add(new Fire("fire-free-yellow3", new Point2D.Double(600,
-		// BOARD_HEIGHT - 900), 0));
-		//
-		// elements.add(new FrescoPath("fresco-red", new Point2D.Double(0, 0),
-		// false));
-		// elements.add(new FrescoPath("fresco-yellow", new Point2D.Double(0,
-		// 0), true));
-		//
-		elements.add(new StartArea("start-a", new Point2D.Double(1000, 0), RALColor.RAL_1023, RALColor.RAL_6018, false));
-		elements.add(new StartArea("start-yellow", new Point2D.Double(1000, 0), RALColor.RAL_6018, RALColor.RAL_1023, true));
+		elements.add(new Border("border", BOARD_HEIGHT + BORDER_WIDTH * 2, BORDER_WIDTH, RALColor.RAL_9005, new Point2D.Double(0, -BORDER_WIDTH), Math.PI / 2, 0));
+		elements.add(new Border("border", BOARD_WIDTH, BORDER_WIDTH, RALColor.RAL_9005, new Point2D.Double(0, -BORDER_WIDTH), 0, 0));
+		elements.add(new Border("border", BOARD_HEIGHT + BORDER_WIDTH * 2, BORDER_WIDTH, RALColor.RAL_9005, new Point2D.Double(BOARD_WIDTH + BORDER_WIDTH, -BORDER_WIDTH), Math.PI / 2, 0));
+		elements.add(new Border("border", BOARD_WIDTH, BORDER_WIDTH, RALColor.RAL_9005, new Point2D.Double(0, BOARD_HEIGHT), 0, 0));
 
-		elements.add(new Border("border", 700, BORDER_WIDTH, RALColor.RAL_3020, new Point2D.Double(0, -BORDER_WIDTH), 0, 3));
-		elements.add(new Border("border", 700, BORDER_WIDTH, RALColor.RAL_1023, new Point2D.Double(0, BOARD_HEIGHT), 0, 3));
-		elements.add(new Border("border", BOARD_WIDTH - 700 + BORDER_WIDTH, BORDER_WIDTH, Color.WHITE, new Point2D.Double(700, -BORDER_WIDTH), 0, 3));
-		elements.add(new Border("border", BOARD_WIDTH - 700 + BORDER_WIDTH, BORDER_WIDTH, Color.WHITE, new Point2D.Double(700, BOARD_HEIGHT), 0, 3));
-		elements.add(new Border("border", BORDER_WIDTH, 400 + BORDER_WIDTH, RALColor.RAL_3020, new Point2D.Double(-BORDER_WIDTH, -BORDER_WIDTH), 0, 3));
-		elements.add(new Border("border", BORDER_WIDTH, 400 + BORDER_WIDTH, RALColor.RAL_1023, new Point2D.Double(-BORDER_WIDTH, BOARD_HEIGHT - 400), 0, 3));
-		elements.add(new Border("border", BORDER_WIDTH, 800, Color.WHITE, new Point2D.Double(-BORDER_WIDTH, 1100), 0, 3));
-		elements.add(new Border("border", BORDER_WIDTH, 700, RALColor.RAL_8002, new Point2D.Double(-BORDER_WIDTH, 400), 0, 3));
-		elements.add(new Border("border", BORDER_WIDTH, 700, RALColor.RAL_8002, new Point2D.Double(-BORDER_WIDTH, 1900), 0, 3));
+		elements.add(new StartArea("start-a", new Point2D.Double(BOARD_MIDDLE_WIDTH, 0), COLOR_A, RALColor.RAL_6018, false));
+		elements.add(new StartArea("start-b", new Point2D.Double(BOARD_MIDDLE_WIDTH, 0), COLOR_B, RALColor.RAL_1023, true));
 
-		// elements.add(new Beacon("beacon-red-1", new Point2D.Double(-62, -62),
-		// RALColor.RAL_3020));
-		// elements.add(new Beacon("beacon-red-2", new
-		// Point2D.Double(BOARD_WIDTH + 62, -62), RALColor.RAL_3020));
-		// elements.add(new Beacon("beacon-red-3", new
-		// Point2D.Double(BOARD_WIDTH / 2, BOARD_HEIGHT + 62),
-		// RALColor.RAL_3020));
-		//
-		// elements.add(new Beacon("beacon-yellow-1", new Point2D.Double(-62,
-		// BOARD_HEIGHT + 62), RALColor.RAL_1023));
-		// elements.add(new Beacon("beacon-yellow-2", new
-		// Point2D.Double(BOARD_WIDTH + 62, BOARD_HEIGHT + 62),
-		// RALColor.RAL_1023));
-		// elements.add(new Beacon("beacon-yellow-3", new
-		// Point2D.Double(BOARD_WIDTH / 2, -62), RALColor.RAL_1023));
+		elements.add(new FilmEditingArea("editing", new Point2D.Double(BOARD_WIDTH, BOARD_MIDDLE_HEIGHT)));
+		elements.add(new CentralArea("central", new Point2D.Double(BOARD_MIDDLE_WIDTH, BOARD_MIDDLE_HEIGHT)));
+
+		elements.add(new PathLine("path-a", new Point2D.Double(0, 0), false));
+		elements.add(new PathLine("path-b", new Point2D.Double(0, 0), true));
+
+		elements.add(new StepsArea("steps-a", new Point2D.Double(0, BOARD_MIDDLE_HEIGHT - BORDER_WIDTH / 2 - StepsArea.HALF_HEIGHT), COLOR_A));
+		elements.add(new StepsArea("steps-b", new Point2D.Double(0, BOARD_MIDDLE_HEIGHT + BORDER_WIDTH / 2 + StepsArea.HALF_HEIGHT), COLOR_B));
 
 		Collections.sort(elements, new GameBoardElementsComparator());
 	}

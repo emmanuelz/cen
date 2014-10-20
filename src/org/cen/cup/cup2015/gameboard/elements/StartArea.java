@@ -1,9 +1,7 @@
 package org.cen.cup.cup2015.gameboard.elements;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Path2D;
@@ -16,7 +14,6 @@ import org.cen.ui.gameboard.RALColor;
 public class StartArea extends AbstractGameBoardElement {
 	private Path2D pathIn = new Path2D.Double();
 	private Path2D pathOut = new Path2D.Double();
-	private Stroke stroke = new BasicStroke(2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
 	private Color colorIn;
 	private Color colorOut;
 
@@ -51,7 +48,7 @@ public class StartArea extends AbstractGameBoardElement {
 
 	@Override
 	public void paint(Graphics2D g) {
-		g.setStroke(stroke);
+		g.setStroke(Strokes.thinStroke);
 		g.setColor(colorOut);
 		g.fill(pathOut);
 		g.setColor(RALColor.RAL_9005);
