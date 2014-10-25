@@ -174,12 +174,28 @@ public class XYParser extends AbstractTrajectoryParser {
 			case 'r':
 				parseRotation(s);
 				break;
+			case 'd':
+				parseStraightDistance(s);
+				break;
 			default:
 				throw new ParseException("unexpected value: " + type, 0);
 			}
 		} finally {
 			s.close();
 		}
+	}
+
+	private void parseStraightDistance(Scanner s) throws ParseException {
+		double distance = s.nextDouble();
+		CommonData data = parseCommon(s);
+
+		double x = distance * Math.cos(lastAngle);
+		double y = distance * Math.sin(lastAngle);
+
+		x = lastx + transformCoordinate(x, xScale, xTranslation);
+		y = lasty + transformCoordinate(y, yScale, yTranslation);
+
+		handleXYCoordinates(x, y, data);
 	}
 
 	private void parseRotation(Scanner s) {
@@ -193,12 +209,9 @@ public class XYParser extends AbstractTrajectoryParser {
 		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, data.linearSpeed, angle, data.rotationSpeed, p, timestamp);
 		frames.add(frame);
 
-		p = new Point2D.Double(lastx, lasty);
-		timestamp += data.additionalTime;
-		frame = new KeyFrame(TrajectoryMovement.LINE, data.linearSpeed, angle, data.rotationSpeed, p, timestamp);
-		frames.add(frame);
+		addAdditionalTime(p, angle, data.additionalTime);
 
-		lastAngle = angle;
+		lastAngle = angle;// % Angle.PIx2;
 	}
 
 	private void parseSegment(Scanner s) throws ParseException {
@@ -206,6 +219,10 @@ public class XYParser extends AbstractTrajectoryParser {
 		double y = readY(s);
 		CommonData data = parseCommon(s);
 
+		handleXYCoordinates(x, y, data);
+	}
+
+	private void handleXYCoordinates(double x, double y, CommonData data) throws ParseException {
 		double dx = x - lastx;
 		double dy = y - lasty;
 		double angle = Math.atan2(dy, dx);
@@ -256,16 +273,20 @@ public class XYParser extends AbstractTrajectoryParser {
 
 	private double readAngle(Scanner s) {
 		double angle = Math.toRadians(s.nextDouble());
-		angle *= angleScale;
-		angle += angleTranslation;
+		angle = transformCoordinate(angle, angleScale, angleTranslation);
 		return angle;
 	}
 
 	private double readCoordinate(Scanner s, double scale, double translation) {
 		double c = s.nextDouble();
-		c *= scale;
-		c += translation;
+		c = transformCoordinate(c, scale, translation);
 		return c;
+	}
+
+	private double transformCoordinate(double value, double scale, double translation) {
+		value *= scale;
+		value += translation;
+		return value;
 	}
 
 	private double readX(Scanner s) {

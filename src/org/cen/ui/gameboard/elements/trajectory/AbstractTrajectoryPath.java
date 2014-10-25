@@ -38,6 +38,11 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 	}
 
 	@Override
+	public String getTrajectoryDescription() {
+		return null;
+	}
+
+	@Override
 	public IGauge getGauge() {
 		return gauge;
 	}

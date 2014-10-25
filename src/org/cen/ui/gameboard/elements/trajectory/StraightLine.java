@@ -6,7 +6,50 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+import org.cen.math.Angle;
+
 public class StraightLine extends AbstractTrajectoryPath {
+	@Override
+	public String getTrajectoryDescription() {
+		StringBuilder sb = new StringBuilder();
+		Point2D last = null;
+		double lastOrientation = 0;
+		for (KeyFrame frame : frames) {
+			TrajectoryMovement movement = frame.getMovement();
+			switch (movement) {
+			case START:
+				last = frame.getPosition();
+				lastOrientation = frame.getOrientation();
+				sb.append(String.format("- start at %s\n", last.toString()));
+				break;
+			case BEZIER:
+				break;
+			case CLOTHOID:
+				break;
+			case LINE:
+				Point2D p = frame.getPosition();
+				double distance = p.distance(last);
+				double speed = frame.getMovementSpeed();
+				String direction = speed > 0 ? "forward" : "backward";
+				sb.append(String.format("- move %s of %.0f mm (%.0f)\n", direction, distance, 9.557 * distance * Math.signum(speed)));
+				last = p;
+				break;
+			case NONE:
+				break;
+			case ROTATION:
+				double o = frame.getOrientation();
+				double angle = Angle.getRotationAngle(lastOrientation, o);
+				angle = Math.toDegrees(angle);
+				sb.append(String.format("- rotation of %.0f° (%.0f)\n", angle, 22540d / 360d * angle));
+				lastOrientation = o;
+				break;
+			default:
+				break;
+			}
+		}
+		return sb.toString();
+	}
+
 	private ArrayList<KeyFrame> frames;
 	private KeyFrame keyFrame;
 	private Path2D path;
@@ -19,7 +62,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 		int n = frames.size();
 		start = frames.get(0).getPosition();
 		end = frames.get(n - 1).getPosition();
-		
+
 		boolean forward = true;
 
 		path = new Path2D.Double();
@@ -47,6 +90,8 @@ public class StraightLine extends AbstractTrajectoryPath {
 				break;
 			}
 		}
+
+		System.out.println(getTrajectoryDescription());
 	}
 
 	private KeyFrame getKeyFrame(double timestamp) {
