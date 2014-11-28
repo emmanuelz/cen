@@ -59,6 +59,7 @@ public class KeyFrameInterpolator {
 		Point2D e = end.getPosition();
 		Point2D p = Bezier.getPoint(d, s, points[0], points[1], e);
 		double angle = Bezier.getAngle(d, s, points[0], points[1], e);
+
 		KeyFrame frame = new KeyFrame(TrajectoryMovement.BEZIER, start.getMovementSpeed(), angle, 0, p, timestamp, points);
 		return frame;
 	}

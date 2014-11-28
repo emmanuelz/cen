@@ -19,6 +19,7 @@ import org.cen.ui.gameboard.IGameBoardElement;
 import org.cen.ui.gameboard.RALColor;
 import org.cen.ui.gameboard.elements.Board;
 import org.cen.ui.gameboard.elements.Border;
+import org.cen.ui.gameboard.elements.object.MovableRobot;
 
 /**
  * Gameboard for the cup 2015.
@@ -93,6 +94,8 @@ public class GameBoard2015 extends AbstractGameBoard {
 
 		elements.add(new StepsArea("steps-a", new Point2D.Double(0, BOARD_MIDDLE_HEIGHT - BORDER_WIDTH / 2 - StepsArea.HALF_HEIGHT), COLOR_A));
 		elements.add(new StepsArea("steps-b", new Point2D.Double(0, BOARD_MIDDLE_HEIGHT + BORDER_WIDTH / 2 + StepsArea.HALF_HEIGHT), COLOR_B));
+
+		elements.add(new MovableRobot("robot", new Point2D.Double(0, 0), 0));
 
 		Collections.sort(elements, new GameBoardElementsComparator());
 	}

@@ -60,6 +60,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.cen.cup.cup2015.gameboard.GameBoard2015;
+import org.cen.services.InputData;
+import org.cen.services.InputParser;
+import org.cen.services.SerialInputService;
 import org.cen.trajectories.IInputFile;
 import org.cen.trajectories.InputFile;
 import org.cen.trajectories.InputFileType;
@@ -72,6 +75,7 @@ import org.cen.ui.gameboard.GameBoardView;
 import org.cen.ui.gameboard.IGameBoardElement;
 import org.cen.ui.gameboard.IGameBoardEvent;
 import org.cen.ui.gameboard.IGameBoardEventListener;
+import org.cen.ui.gameboard.elements.object.IMovable;
 import org.cen.ui.gameboard.elements.trajectory.Gauge;
 import org.cen.ui.gameboard.elements.trajectory.GaugeFactory;
 import org.cen.ui.gameboard.elements.trajectory.IGauge;
@@ -127,8 +131,34 @@ public class Main implements IGameBoardEventListener {
 
 	public Main() {
 		super();
+		initServices();
 		initGUI();
 		load();
+	}
+
+	private void initServices() {
+		InputData inputData = new InputData() {
+			@Override
+			public void setPosition(Point2D position, double angle) {
+				setRobotPosition(position, angle);
+			}
+		};
+		InputParser parser = new InputParser(inputData);
+		new SerialInputService("COM10", parser);
+	}
+
+	protected void setRobotPosition(Point2D position, double angle) {
+		System.out.println(position);
+		List<IGameBoardElement> elements = gameBoard.findElements("robot");
+		for (IGameBoardElement element : elements) {
+			if (element instanceof IMovable) {
+				IMovable movable = (IMovable) element;
+				movable.setPosition(position);
+				movable.setOrientation(angle);
+				break;
+			}
+		}
+		updateGameBoard();
 	}
 
 	private void addButton(Container c, Action action) {
