@@ -13,6 +13,8 @@ import org.cen.cup.cup2015.gameboard.elements.FilmEditingArea;
 import org.cen.cup.cup2015.gameboard.elements.PathLine;
 import org.cen.cup.cup2015.gameboard.elements.StartArea;
 import org.cen.cup.cup2015.gameboard.elements.StepsArea;
+import org.cen.trajectories.planner.OrientedPosition;
+import org.cen.trajectories.planner.PlannedTrajectory;
 import org.cen.ui.gameboard.AbstractGameBoard;
 import org.cen.ui.gameboard.GameBoardElementsComparator;
 import org.cen.ui.gameboard.IGameBoardElement;
@@ -95,7 +97,11 @@ public class GameBoard2015 extends AbstractGameBoard {
 		elements.add(new StepsArea("steps-a", new Point2D.Double(0, BOARD_MIDDLE_HEIGHT - BORDER_WIDTH / 2 - StepsArea.HALF_HEIGHT), COLOR_A));
 		elements.add(new StepsArea("steps-b", new Point2D.Double(0, BOARD_MIDDLE_HEIGHT + BORDER_WIDTH / 2 + StepsArea.HALF_HEIGHT), COLOR_B));
 
-		elements.add(new MovableRobot("robot", new Point2D.Double(0, 0), 0));
+		elements.add(new MovableRobot("robot"));
+
+		PlannedTrajectory pt = new PlannedTrajectory("planned");
+		pt.planTrajectory(new OrientedPosition(0, 0, Math.toRadians(15)), new OrientedPosition(1000, 1000, Math.toRadians(90)));
+		elements.add(pt);
 
 		Collections.sort(elements, new GameBoardElementsComparator());
 	}

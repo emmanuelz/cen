@@ -12,8 +12,8 @@ import org.cen.ui.gameboard.AbstractGameBoardElement;
 public class MovableRobot extends AbstractGameBoardElement implements IMovable {
 	private Shape area;
 
-	public MovableRobot(String name, Point2D position, double orientation) {
-		super(name, position, orientation, 1000);
+	public MovableRobot(String name) {
+		super(name, new Point2D.Double(0, 0), 0, 1000);
 		area = new Arc2D.Double(-105, -105, 210, 210, 0, 360, Arc2D.PIE);
 	}
 
