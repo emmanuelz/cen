@@ -11,6 +11,8 @@ import java.util.List;
 import org.cen.cup.cup2015.gameboard.elements.CentralArea;
 import org.cen.cup.cup2015.gameboard.elements.FilmEditingArea;
 import org.cen.cup.cup2015.gameboard.elements.PathLine;
+import org.cen.cup.cup2015.gameboard.elements.PopCornBasket;
+import org.cen.cup.cup2015.gameboard.elements.Stand;
 import org.cen.cup.cup2015.gameboard.elements.StartArea;
 import org.cen.cup.cup2015.gameboard.elements.StepsArea;
 import org.cen.trajectories.planner.OrientedPosition;
@@ -89,13 +91,36 @@ public class GameBoard2015 extends AbstractGameBoard {
 		elements.add(new StartArea("start-b", new Point2D.Double(BOARD_MIDDLE_WIDTH, 0), COLOR_B, RALColor.RAL_1023, true));
 
 		elements.add(new FilmEditingArea("editing", new Point2D.Double(BOARD_WIDTH, BOARD_MIDDLE_HEIGHT)));
-		elements.add(new CentralArea("central", new Point2D.Double(BOARD_MIDDLE_WIDTH, BOARD_MIDDLE_HEIGHT)));
+		elements.add(new CentralArea("central", new Point2D.Double(1070, BOARD_MIDDLE_HEIGHT)));
 
 		elements.add(new PathLine("path-a", new Point2D.Double(0, 0), false));
 		elements.add(new PathLine("path-b", new Point2D.Double(0, 0), true));
 
 		elements.add(new StepsArea("steps-a", new Point2D.Double(0, BOARD_MIDDLE_HEIGHT - BORDER_WIDTH / 2 - StepsArea.HALF_HEIGHT), COLOR_A));
 		elements.add(new StepsArea("steps-b", new Point2D.Double(0, BOARD_MIDDLE_HEIGHT + BORDER_WIDTH / 2 + StepsArea.HALF_HEIGHT), COLOR_B));
+
+		elements.add(new PopCornBasket("popcorn-a-left", new Point2D.Double(1750, 250)));
+		elements.add(new PopCornBasket("popcorn-a-right", new Point2D.Double(830, 910)));
+		elements.add(new PopCornBasket("popcorn-b-left", new Point2D.Double(1750, 2750)));
+		elements.add(new PopCornBasket("popcorn-b-right", new Point2D.Double(830, 2090)));
+		elements.add(new PopCornBasket("popcorn-center", new Point2D.Double(1650, 1500)));
+
+		elements.add(new Stand("stand-a-1", new Point2D.Double(200, 90), COLOR_A));
+		elements.add(new Stand("stand-a-2", new Point2D.Double(1750, 90), COLOR_A));
+		elements.add(new Stand("stand-a-3", new Point2D.Double(1850, 90), COLOR_A));
+		elements.add(new Stand("stand-a-4", new Point2D.Double(100, 850), COLOR_A));
+		elements.add(new Stand("stand-a-5", new Point2D.Double(200, 850), COLOR_A));
+		elements.add(new Stand("stand-a-6", new Point2D.Double(1355, 870), COLOR_A));
+		elements.add(new Stand("stand-a-7", new Point2D.Double(1770, 1100), COLOR_A));
+		elements.add(new Stand("stand-a-8", new Point2D.Double(1400, 1300), COLOR_A));
+		elements.add(new Stand("stand-a-1", new Point2D.Double(200, 2910), COLOR_B));
+		elements.add(new Stand("stand-a-2", new Point2D.Double(1750, 2910), COLOR_B));
+		elements.add(new Stand("stand-a-3", new Point2D.Double(1850, 2910), COLOR_B));
+		elements.add(new Stand("stand-a-4", new Point2D.Double(100, 2150), COLOR_B));
+		elements.add(new Stand("stand-a-5", new Point2D.Double(200, 2150), COLOR_B));
+		elements.add(new Stand("stand-a-6", new Point2D.Double(1355, 2130), COLOR_B));
+		elements.add(new Stand("stand-a-7", new Point2D.Double(1770, 1900), COLOR_B));
+		elements.add(new Stand("stand-a-8", new Point2D.Double(1400, 1700), COLOR_B));
 
 		elements.add(new MovableRobot("robot"));
 
