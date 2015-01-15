@@ -12,6 +12,7 @@ import org.cen.cup.cup2015.gameboard.elements.CentralArea;
 import org.cen.cup.cup2015.gameboard.elements.FilmEditingArea;
 import org.cen.cup.cup2015.gameboard.elements.PathLine;
 import org.cen.cup.cup2015.gameboard.elements.PopCornBasket;
+import org.cen.cup.cup2015.gameboard.elements.PopCornDispenser;
 import org.cen.cup.cup2015.gameboard.elements.Stand;
 import org.cen.cup.cup2015.gameboard.elements.StartArea;
 import org.cen.cup.cup2015.gameboard.elements.StepsArea;
@@ -121,12 +122,18 @@ public class GameBoard2015 extends AbstractGameBoard {
 		elements.add(new Stand("stand-a-6", new Point2D.Double(1355, 2130), COLOR_B));
 		elements.add(new Stand("stand-a-7", new Point2D.Double(1770, 1900), COLOR_B));
 		elements.add(new Stand("stand-a-8", new Point2D.Double(1400, 1700), COLOR_B));
+		
+		elements.add(new PopCornDispenser("dispenser-a-1", new Point2D.Double(0, 300)));
+		elements.add(new PopCornDispenser("dispenser-a-2", new Point2D.Double(0, 600)));
+		elements.add(new PopCornDispenser("dispenser-b-2", new Point2D.Double(0, 2400)));
+		elements.add(new PopCornDispenser("dispenser-b-1", new Point2D.Double(0, 2700)));
 
-		elements.add(new MovableRobot("robot"));
+		// elements.add(new MovableRobot("robot"));
 
-		PlannedTrajectory pt = new PlannedTrajectory("planned");
-		pt.planTrajectory(new OrientedPosition(0, 0, Math.toRadians(15)), new OrientedPosition(1000, 1000, Math.toRadians(90)));
-		elements.add(pt);
+		// PlannedTrajectory pt = new PlannedTrajectory("planned");
+		// pt.planTrajectory(new OrientedPosition(0, 0, Math.toRadians(15)), new
+		// OrientedPosition(1000, 1000, Math.toRadians(90)));
+		// elements.add(pt);
 
 		Collections.sort(elements, new GameBoardElementsComparator());
 	}

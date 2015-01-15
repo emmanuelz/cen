@@ -144,7 +144,7 @@ public class Main implements IGameBoardEventListener {
 			}
 		};
 		InputParser parser = new InputParser(inputData);
-		new SerialInputService("COM10", parser);
+		//new SerialInputService("COM10", parser);
 	}
 
 	protected void setRobotPosition(Point2D position, double angle) {
