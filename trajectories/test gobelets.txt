@@ -1,0 +1,36 @@
+// Chaque ligne représente un mouvement
+// Paramètres :
+//   - t : type de trajectoire
+//   - x;y : coordonnées x;y du point de destination en mm
+//   - o : angle de l'orientation en degrés
+//   - vl : vitesse linéaire en mm/s
+//   - va : vitesse angulaire en tour/s
+//   - cx1;cy1, ..., cxn;cyn: coordonnées x;y du n-ième point de contrôle en mm
+//   - ta : temps additionnel en fin de mouvement en s (correspond à la durée d'une action, d'un temps d'attente, etc.) 
+// Unités : distances en mm, temps en s, angles en degrés
+// Axes : x = largeur, y = longueur, repère direct (angle 0° correspond au sens des x croissants, 90° au sens des y croissants)
+// Types de trajectoires :
+//   - t : transformation affine : sx;tx;sy;ty;sa;ta
+//   - i : positionnement et angle initiaux, vitesses par défaut : t;x;y;o;vl;va;ta
+//   - s : segment : t;x;y;vl;va;ta
+//   - b : courbe de Bézier quadratique : t;x;y;cx1;cy1;cx2;cy2;vl;va;ta
+
+//t;1;0;-1;3000;-1;0
+i;1000;175;90;200;0,2;0
+s;1000;1000
+s;1000;520
+//s;830;900
+s;885;780
+// sortir actionneur attrape balle (4)
+s;176;300;-200;0,2
+s;175;300;-200;0,2;3
+s;175;600
+s;176;600;200;0,2;3
+// descendre 2 balles
+s;900;600
+s;1080;200
+d;-50;-200;0,2
+// poser verre, sortir guides, vider 2 balles
+s;920;350;-200;0,2
+s;920;175
+s;920;220;-200;0,2
