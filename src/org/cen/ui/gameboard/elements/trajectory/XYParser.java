@@ -158,7 +158,10 @@ public class XYParser extends AbstractTrajectoryParser {
 			switch (c) {
 			case '/':
 			case '#':
-				return;
+				break;
+			case 'c':
+				parseComment(line);
+				break;
 			case 'i':
 				parseInitialPosition(s);
 				break;
@@ -183,6 +186,16 @@ public class XYParser extends AbstractTrajectoryParser {
 		} finally {
 			s.close();
 		}
+	}
+
+	private void parseComment(String line) {
+		int index = frames.size() - 1;
+		if (index < 0) {
+			return;
+		}
+		KeyFrame frame = frames.get(index);
+		line = line.substring(2);
+		frame.addComment(line);
 	}
 
 	private void parseStraightDistance(Scanner s) throws ParseException {

@@ -21,3 +21,21 @@ path.moveTo(30, 15);
 path.lineTo(60, 0);
 path.moveTo(30, -15);
 path.lineTo(60, 0);
+
+// pince avant
+path.moveTo(130, 0);
+path.lineTo(150, 0);
+path.moveTo(140, -10);
+path.lineTo(140, 10);
+
+// pince arrière
+path.moveTo(-125, 0);
+path.lineTo(-145, 0);
+path.moveTo(-135, -10);
+path.lineTo(-135, 10);
+
+// bras droit
+path.moveTo(50, -130);
+path.lineTo(50, -150);
+path.moveTo(40, -140);
+path.lineTo(60, -140);

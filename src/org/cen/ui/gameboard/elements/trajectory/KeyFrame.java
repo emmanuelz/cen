@@ -1,16 +1,27 @@
 package org.cen.ui.gameboard.elements.trajectory;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 
 public class KeyFrame implements Comparable<KeyFrame> {
 	private Point2D[] controlPoints;
 	private TrajectoryMovement movement;
 	private double movementSpeed;
 	private double orientation;
+
 	private Point2D position;
 	private double rotationSpeed;
 
 	private double timestamp;
+	private ArrayList<String> comments;
+
+	public ArrayList<String> getComments() {
+		return comments;
+	}
+
+	public boolean hasComments() {
+		return (comments != null) && (!comments.isEmpty());
+	}
 
 	public KeyFrame(TrajectoryMovement movement, double movementSpeed, double orientation, double rotationSpeed, Point2D position, double timestamp, Point2D... controlPoints) {
 		super();
@@ -54,5 +65,12 @@ public class KeyFrame implements Comparable<KeyFrame> {
 
 	public double getTimestamp() {
 		return timestamp;
+	}
+
+	public void addComment(String comment) {
+		if (comments == null) {
+			comments = new ArrayList<String>();
+		}
+		comments.add(comment);
 	}
 }
