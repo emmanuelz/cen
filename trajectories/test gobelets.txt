@@ -19,6 +19,7 @@
 i;1000;210;90;200;0,2;0
 s;1000;535
 r;24
+c;// Tirette
 c;FCM_attendre_tirette();
 c;// démarrage NXT
 c;FCM_envoyer_ordre_NXT(1);

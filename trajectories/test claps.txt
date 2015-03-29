@@ -17,21 +17,34 @@
 
 //t;1;0;-1;3000;-1;0
 i;920;220;-90;200;0,2;0
-s;1240;1300
-r;107
-c;// Sortie pince arrière
-c;FCM_envoyer_ordre_NXT(13);
-s;1720;1300;-200;0,2;1
-c;// Rentrée pince arrière
-c;FCM_envoyer_ordre_NXT(14);
-s;1697;1367
+//i;1000;210;90;200;0,2;0
+//c;// Tirette
+//c;FCM_attendre_tirette();
+//c;// démarrage NXT
+//c;FCM_envoyer_ordre_NXT(1);
+//d;100
+//s;1240;1300
+//r;107
+//c;// Sortie pince arrière
+//c;FCM_envoyer_ordre_NXT(13);
+//s;1720;1300;-200;0,2;1
+//c;// Rentrée pince arrière
+//c;FCM_envoyer_ordre_NXT(14);
+//s;1697;1367
+s;1585;1380
+c;// Pince à gobelet
+c;FCM_envoyer_ordre_NXT(3);
 c;// Ouvrir le bras
 c;FCM_envoyer_ordre_NXT(5);
 s;1880;2475
 c;// Fermer le bras
 c;FCM_envoyer_ordre_NXT(6);
 s;1470;2730
-s;1685;2620;-200;0,2;1
-r;-90;200;0,2;1
-r;95;200;0,2;1
+c;FCM_envoyer_ordre_NXT(4);
+//s;1685;2620;-200;0,2;1
+//r;-90;200;0,2;1
+s;1610;2740;200;0,2;1
+c;FCM_envoyer_ordre_NXT(3);
+r;120;200;0,2;1
+c;FCM_envoyer_ordre_NXT(4);
 d;-200;-200;0,2;1
