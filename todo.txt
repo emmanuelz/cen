@@ -1,4 +1,6 @@
-- cône détection
+﻿- cône détection
 - couleur du robot : ok
 - affichage des libellés des éléments (à réactiver)
 
+- poteau : x = 140mm
+- tourner vers la droite, pas vers la gauche

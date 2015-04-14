@@ -5,12 +5,14 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Window.Type;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -40,14 +42,18 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JTextArea;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -62,7 +68,6 @@ import javax.swing.event.ListSelectionListener;
 import org.cen.cup.cup2015.gameboard.GameBoard2015;
 import org.cen.services.InputData;
 import org.cen.services.InputParser;
-import org.cen.services.SerialInputService;
 import org.cen.trajectories.IInputFile;
 import org.cen.trajectories.InputFile;
 import org.cen.trajectories.InputFileType;
@@ -111,6 +116,12 @@ public class Main implements IGameBoardEventListener {
 		new Main();
 	}
 
+	private Action actionShowConsole;
+
+	private JFrame consoleFrame;
+
+	private JTextArea consoleTextArea;
+
 	private IGameBoardElement currentTrajectory = null;
 
 	private CheckListController<DisplayedTrajectory> elementsController;
@@ -133,32 +144,8 @@ public class Main implements IGameBoardEventListener {
 		super();
 		initServices();
 		initGUI();
+		initConsole();
 		load();
-	}
-
-	private void initServices() {
-		InputData inputData = new InputData() {
-			@Override
-			public void setPosition(Point2D position, double angle) {
-				setRobotPosition(position, angle);
-			}
-		};
-		InputParser parser = new InputParser(inputData);
-		//new SerialInputService("COM10", parser);
-	}
-
-	protected void setRobotPosition(Point2D position, double angle) {
-		System.out.println(position);
-		List<IGameBoardElement> elements = gameBoard.findElements("robot");
-		for (IGameBoardElement element : elements) {
-			if (element instanceof IMovable) {
-				IMovable movable = (IMovable) element;
-				movable.setPosition(position);
-				movable.setOrientation(angle);
-				break;
-			}
-		}
-		updateGameBoard();
 	}
 
 	private void addButton(Container c, Action action) {
@@ -195,6 +182,10 @@ public class Main implements IGameBoardEventListener {
 		DefaultListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController.getListModel();
 		int start = model.getSize();
 		model.addElement(trajectory);
+
+		ITrajectoryPath path = trajectory.getTrajectoryPath();
+		String description = (String) path.getProperty(ITrajectoryPath.KEY_DESCRIPTION);
+		addToConsole(description);
 
 		ListSelectionModel selection = elementsController.getSelectionModel();
 		selection.addSelectionInterval(start, start);
@@ -266,8 +257,12 @@ public class Main implements IGameBoardEventListener {
 		JMenu file = new JMenu("File");
 		menu.add(file);
 
-		Action action = getActionExit();
+		Action action = getActionExport();
 		JMenuItem menuItem = new JMenuItem(action);
+		file.add(menuItem);
+
+		action = getActionExit();
+		menuItem = new JMenuItem(action);
 		file.add(menuItem);
 
 		JMenu display = new JMenu("Display");
@@ -275,6 +270,10 @@ public class Main implements IGameBoardEventListener {
 
 		action = getActionShowElementsLabels();
 		menuItem = new JCheckBoxMenuItem(action);
+		display.add(menuItem);
+
+		actionShowConsole = getActionShowConsole();
+		menuItem = new JCheckBoxMenuItem(actionShowConsole);
 		display.add(menuItem);
 
 		frame.setJMenuBar(menu);
@@ -360,6 +359,16 @@ public class Main implements IGameBoardEventListener {
 		});
 
 		c.add(panel, BorderLayout.SOUTH);
+	}
+
+	private void addToConsole(String description) {
+		if (description == null) {
+			return;
+		}
+		consoleTextArea.append(description);
+		consoleTextArea.append("\n");
+		int l = consoleTextArea.getDocument().getLength();
+		consoleTextArea.setCaretPosition(l);
 	}
 
 	private void addTrajectoriesList(Container c) {
@@ -494,6 +503,21 @@ public class Main implements IGameBoardEventListener {
 		updateGameBoard();
 	}
 
+	protected void fileExportTo(File file) {
+		if (file.exists()) {
+			int result = JOptionPane.showConfirmDialog(null, "The file " + file.getName() + " already exists. Would you like to overwrite it ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+			if (result != JOptionPane.YES_OPTION) {
+				return;
+			}
+		}
+		try (FileOutputStream fos = new FileOutputStream(file)) {
+			String data = consoleTextArea.getText();
+			fos.write(data.getBytes());
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, e, "Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
 	private IInputFile findGauge(String pathName) {
 		ListModel<IInputFile> model = gaugesController.getListModel();
 		return findInModel(model, pathName);
@@ -521,6 +545,36 @@ public class Main implements IGameBoardEventListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
+			}
+		};
+		return action;
+	}
+
+	private Action getActionExport() {
+		Action action = new AbstractAction("Export...") {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				File file = selectFile();
+				if (file != null) {
+					fileExportTo(file);
+				}
+			}
+		};
+		return action;
+	}
+
+	private Action getActionShowConsole() {
+		Action action = new AbstractAction("Console") {
+			private static final long serialVersionUID = 1L;
+			private boolean visible = false;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				visible = !visible;
+				setConsoleVisible(visible);
+				putValue(SELECTED_KEY, visible);
 			}
 		};
 		return action;
@@ -583,8 +637,30 @@ public class Main implements IGameBoardEventListener {
 		statusBarLabel.setText(s);
 	}
 
+	private void initConsole() {
+		consoleFrame = new JFrame("Console");
+		consoleFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		consoleFrame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				actionShowConsole.actionPerformed(new ActionEvent(this, 0, null));
+				super.windowClosing(e);
+			}
+		});
+		Container c = consoleFrame.getContentPane();
+		c.setLayout(new BorderLayout(10, 10));
+
+		consoleTextArea = new JTextArea(30, 80);
+		JScrollPane scrollPane = new JScrollPane(consoleTextArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		c.add(scrollPane, BorderLayout.CENTER);
+
+		consoleFrame.setType(Type.UTILITY);
+		consoleFrame.setAlwaysOnTop(true);
+		consoleFrame.pack();
+	}
+
 	private void initGUI() {
-		JFrame frame = new JFrame();
+		JFrame frame = new JFrame("Simulator");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.addWindowListener(new WindowAdapter() {
 			@Override
@@ -611,6 +687,17 @@ public class Main implements IGameBoardEventListener {
 
 		frame.pack();
 		frame.setVisible(true);
+	}
+
+	private void initServices() {
+		InputData inputData = new InputData() {
+			@Override
+			public void setPosition(Point2D position, double angle) {
+				setRobotPosition(position, angle);
+			}
+		};
+		InputParser parser = new InputParser(inputData);
+		// new SerialInputService("COM10", parser);
 	}
 
 	private boolean isSelected(IInputFile file, InputFileType type) {
@@ -729,6 +816,35 @@ public class Main implements IGameBoardEventListener {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	protected File selectFile() {
+		JFileChooser fc = new JFileChooser();
+		int returnVal = fc.showSaveDialog(null);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			File file = fc.getSelectedFile();
+			return file;
+		} else {
+			return null;
+		}
+	}
+
+	protected void setConsoleVisible(boolean visible) {
+		consoleFrame.setVisible(visible);
+	}
+
+	protected void setRobotPosition(Point2D position, double angle) {
+		System.out.println(position);
+		List<IGameBoardElement> elements = gameBoard.findElements("robot");
+		for (IGameBoardElement element : elements) {
+			if (element instanceof IMovable) {
+				IMovable movable = (IMovable) element;
+				movable.setPosition(position);
+				movable.setOrientation(angle);
+				break;
+			}
+		}
+		updateGameBoard();
 	}
 
 	protected void setTimeStamp(double timestamp) {

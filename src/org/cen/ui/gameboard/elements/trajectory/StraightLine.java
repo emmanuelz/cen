@@ -20,7 +20,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 			case START:
 				last = frame.getPosition();
 				lastOrientation = frame.getOrientation();
-				sb.append(String.format("// start at %s\n", last.toString()));
+				sb.append(String.format("// start at %s\r\n", last.toString()));
 				break;
 			case BEZIER:
 				break;
@@ -31,8 +31,8 @@ public class StraightLine extends AbstractTrajectoryPath {
 				double distance = p.distance(last);
 				double speed = frame.getMovementSpeed();
 				String direction = speed > 0 ? "forward" : "backward";
-				sb.append(String.format("// move %s of %.0f mm (%.0f)\n", direction, distance, 9.557 * distance * Math.signum(speed)));
-				sb.append(String.format("FCM_avancer(%.0f);\n", 9.557 * distance * Math.signum(speed)));
+				sb.append(String.format("// move %s of %.0f mm (%.0f)\r\n", direction, distance, 9.557 * distance * Math.signum(speed)));
+				sb.append(String.format("FCM_avancer(%.0f);\r\n", 9.557 * distance * Math.signum(speed)));
 				last = p;
 				break;
 			case NONE:
@@ -41,8 +41,8 @@ public class StraightLine extends AbstractTrajectoryPath {
 				double o = frame.getOrientation();
 				double angle = Angle.getRotationAngle(lastOrientation, o);
 				angle = Math.toDegrees(angle);
-				sb.append(String.format("// rotation of %.0f° (%.0f)\n", angle, 22527.5d / 360d * angle));
-				sb.append(String.format("FCM_tourner(%.0f);\n", 22527.5d / 360d * angle));
+				sb.append(String.format("// rotation of %.0f° (%.0f)\r\n", angle, 22527.5d / 360d * angle));
+				sb.append(String.format("FCM_tourner(%.0f);\r\n", 22527.5d / 360d * angle));
 				lastOrientation = o;
 				break;
 			default:
@@ -52,7 +52,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 				ArrayList<String> comments = frame.getComments();
 				for (String s : comments) {
 					sb.append(s);
-					sb.append('\n');
+					sb.append("\r\n");
 				}
 			}
 		}
@@ -100,7 +100,8 @@ public class StraightLine extends AbstractTrajectoryPath {
 			}
 		}
 
-		System.out.println(getTrajectoryDescription());
+		String description = getTrajectoryDescription();
+		setProperty(KEY_DESCRIPTION, description);
 	}
 
 	private KeyFrame getKeyFrame(double timestamp) {

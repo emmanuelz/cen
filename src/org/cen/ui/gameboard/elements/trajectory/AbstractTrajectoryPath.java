@@ -6,6 +6,8 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.cen.ui.gameboard.AbstractGameBoardElement;
 import org.cen.ui.gameboard.IGameBoardTimedElement;
@@ -17,6 +19,7 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 	protected double finalAngle;
 	private IGauge gauge;
 	protected double initialAngle;
+	private Map<String, Object> properties = new HashMap<String, Object>();
 	protected Point2D start;
 	private BasicStroke stroke = new BasicStroke(3);
 	private Shape trajectoryGauge;
@@ -35,11 +38,6 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 
 	private Color getColor() {
 		return Color.BLUE;
-	}
-
-	@Override
-	public String getTrajectoryDescription() {
-		return null;
 	}
 
 	@Override
@@ -66,6 +64,11 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 	}
 
 	@Override
+	public Object getProperty(String key) {
+		return properties.get(key);
+	}
+
+	@Override
 	public double getRobotFinalAngle() {
 		return finalAngle;
 	}
@@ -77,6 +80,11 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 
 	private Stroke getStroke() {
 		return stroke;
+	}
+
+	@Override
+	public String getTrajectoryDescription() {
+		return null;
 	}
 
 	@Override
@@ -133,5 +141,9 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 		}
 		trajectoryGauge = null;
 		this.gauge = gauge;
+	}
+
+	protected void setProperty(String key, Object value) {
+		properties.put(key, value);
 	}
 }

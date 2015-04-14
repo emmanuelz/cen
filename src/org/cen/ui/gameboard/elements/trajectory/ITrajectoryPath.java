@@ -9,15 +9,11 @@ import java.awt.geom.Point2D;
  * @author Emmanuel ZURMELY
  */
 public interface ITrajectoryPath {
-	/**
-	 * Returns the description of the path as text.
-	 * 
-	 * @return the description of the path as text
-	 */
-	public String getTrajectoryDescription();
+	public static final String KEY_DESCRIPTION = "description";
 
 	/**
-	 * Returns the interface representing the gauge of the object used to render the footprint of the trajectory.
+	 * Returns the interface representing the gauge of the object used to render
+	 * the footprint of the trajectory.
 	 * 
 	 * @return the gauge of the object which this trajectory is related to
 	 */
@@ -38,16 +34,27 @@ public interface ITrajectoryPath {
 	public Point2D getPosition();
 
 	/**
+	 * Returns the value of a property given its name.
+	 * 
+	 * @param key
+	 *            the name of the property
+	 * @return the object representing the value of the property
+	 */
+	public Object getProperty(String key);
+
+	/**
 	 * Returns the orientation of the robot when ending the trajectory.
 	 * 
-	 * @return the orientation of the robot when ending the trajectory in radians
+	 * @return the orientation of the robot when ending the trajectory in
+	 *         radians
 	 */
 	public double getRobotFinalAngle();
 
 	/**
 	 * Returns the orientation of the robot when starting the trajectory.
 	 * 
-	 * @return the orientation of the robot when starting the trajectory in radians
+	 * @return the orientation of the robot when starting the trajectory in
+	 *         radians
 	 */
 	public double getRobotInitialAngle();
 
@@ -57,6 +64,13 @@ public interface ITrajectoryPath {
 	 * @return the control points of the trajectory if any
 	 */
 	public Point2D[] getTrajectoryControlPoints();
+
+	/**
+	 * Returns the description of the path as text.
+	 * 
+	 * @return the description of the path as text
+	 */
+	public String getTrajectoryDescription();
 
 	/**
 	 * Returns the ending position of the trajectory.
@@ -73,7 +87,8 @@ public interface ITrajectoryPath {
 	public Point2D getTrajectoryStart();
 
 	/**
-	 * Sets the interface representing the gauge of the object used to render the footprint of the trajectory.
+	 * Sets the interface representing the gauge of the object used to render
+	 * the footprint of the trajectory.
 	 * 
 	 * @param gauge
 	 *            the gauge of the object which this trajectory is related to
