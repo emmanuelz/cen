@@ -14,6 +14,8 @@
 //   - i : positionnement et angle initiaux, vitesses par défaut : t;x;y;o;vl;va;ta
 //   - s : segment : t;x;y;vl;va;ta
 //   - b : courbe de Bézier quadratique : t;x;y;cx1;cy1;cx2;cy2;vl;va;ta
+//   - d : distance droite : distance
+//   - r : rotation sur place : angle
 
 //t;1;0;-1;3000;-1;0
 i;920;220;-90;200;0,2;0
