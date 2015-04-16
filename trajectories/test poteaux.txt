@@ -26,24 +26,29 @@ i;920;220;-90;200;0,2;0
 //c;FCM_envoyer_ordre_NXT(1);
 d;-250;-200;0,2
 s;350;850
-s;230;850;-200;0,2;0
-r;20;200;0,2;1
 c;// Sortie pince à poteaux
 c;FCM_envoyer_ordre_NXT(42);
-r;-40
-d;400
-r;-170
-r;-170
-s;1850;750
-s;1870;1000;-200;0,2;1
+r;-171;200;0,2;1
+s;1080;520;200;0,2;1
 c;// Relevage pince à poteaux
 c;FCM_envoyer_ordre_NXT(43);
-d;-20;-200;0,2
+s;1800;520
 s;1800;220
 c;// Sortie pince à poteaux
 c;FCM_envoyer_ordre_NXT(42);
 r;-100
 r;-100;200;0,2;1
-r;-160
-d;-800;-200;0,2
-
+r;-165
+d;-800;-200;0,2;1
+c;// Relevage pince à poteaux
+c;FCM_envoyer_ordre_NXT(43);
+c;// Ouvrir le bras
+c;FCM_envoyer_ordre_NXT(5);
+s;1880;825;200;0,2;1
+c;// Fermer le bras
+c;FCM_envoyer_ordre_NXT(6);
+c;// Ouvrir le bras
+c;FCM_envoyer_ordre_NXT(5);
+s;1880;225;200;0,2;1
+c;// Fermer le bras
+c;FCM_envoyer_ordre_NXT(6);

@@ -492,6 +492,10 @@ public class Main implements IGameBoardEventListener {
 		if (trajectory == null) {
 			return;
 		}
+		
+		String description = (String) trajectory.getProperty(ITrajectoryPath.KEY_DESCRIPTION);
+		addToConsole(description);
+
 
 		IGameBoardElement element = (IGameBoardElement) trajectory;
 		elements.add(element);

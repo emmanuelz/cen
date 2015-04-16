@@ -39,3 +39,9 @@ path.moveTo(50, -130);
 path.lineTo(50, -150);
 path.moveTo(40, -140);
 path.lineTo(60, -140);
+
+// bras gauche
+path.moveTo(50, 130);
+path.lineTo(50, 150);
+path.moveTo(40, 140);
+path.lineTo(60, 140);
