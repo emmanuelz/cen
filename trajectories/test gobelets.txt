@@ -32,7 +32,7 @@ c;FCM_envoyer_ordre_NXT(9);
 //s;830;900
 s;887;783;200;0,2;1
 c;// ouverture de la pince
-c;FCM_envoyer_ordre_NXT(3);
+c;nxt=3;delay=1
 s;185;300;-200;0,2
 s;175;300;-200;0,2;3
 c;// descendre 2 balles

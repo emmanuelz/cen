@@ -5,62 +5,24 @@ import java.awt.Shape;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cen.math.Angle;
 
 public class StraightLine extends AbstractTrajectoryPath {
-	@Override
-	public String getTrajectoryDescription() {
-		StringBuilder sb = new StringBuilder();
-		Point2D last = null;
-		double lastOrientation = 0;
-		for (KeyFrame frame : frames) {
-			TrajectoryMovement movement = frame.getMovement();
-			switch (movement) {
-			case START:
-				last = frame.getPosition();
-				lastOrientation = frame.getOrientation();
-				sb.append(String.format("// start at %s\r\n", last.toString()));
-				break;
-			case BEZIER:
-				break;
-			case CLOTHOID:
-				break;
-			case LINE:
-				Point2D p = frame.getPosition();
-				double distance = p.distance(last);
-				double speed = frame.getMovementSpeed();
-				String direction = speed > 0 ? "forward" : "backward";
-				sb.append(String.format("// move %s of %.0f mm (%.0f)\r\n", direction, distance, 9.557 * distance * Math.signum(speed)));
-				sb.append(String.format("FCM_avancer(%.0f);\r\n", 9.557 * distance * Math.signum(speed)));
-				last = p;
-				break;
-			case NONE:
-				break;
-			case ROTATION:
-				double o = frame.getOrientation();
-				double angle = Angle.getRotationAngle(lastOrientation, o);
-				angle = Math.toDegrees(angle);
-				sb.append(String.format("// rotation of %.0f° (%.0f)\r\n", angle, 22527.5d / 360d * angle));
-				sb.append(String.format("FCM_tourner(%.0f);\r\n", 22527.5d / 360d * angle));
-				lastOrientation = o;
-				break;
-			default:
-				break;
-			}
-			if (frame.hasComments()) {
-				ArrayList<String> comments = frame.getComments();
-				for (String s : comments) {
-					sb.append(s);
-					sb.append("\r\n");
-				}
-			}
-		}
-		return sb.toString();
-	}
+	private static final String KEY_ANGLE = "angle";
+	private static final String KEY_COMMENTS = "comments";
+	private static final String KEY_DELAY = "delay";
+	private static final String KEY_DISTANCE = "distance";
+	private static final String KEY_NXT = "nxt";
 
 	private ArrayList<KeyFrame> frames;
+
 	private KeyFrame keyFrame;
+
 	private Path2D path;
 
 	public StraightLine(String name, double initialAngle, double finalAngle, ArrayList<KeyFrame> frames) {
@@ -104,6 +66,49 @@ public class StraightLine extends AbstractTrajectoryPath {
 		setProperty(KEY_DESCRIPTION, description);
 	}
 
+	private void addComments(Map<String, String> params, String values) {
+		String c = params.get(KEY_COMMENTS);
+		if (c != null) {
+			c += values;
+		} else {
+			c = values;
+		}
+		c += "\r\n";
+		params.put(KEY_COMMENTS, c);
+	}
+
+	private void addParameters(Map<String, String> params, String values) {
+		if (values.startsWith("//")) {
+			addComments(params, values);
+			return;
+		}
+
+		Pattern p = Pattern.compile("((\\w+)=(\\w+))*");
+		Matcher m = p.matcher(values);
+		boolean found = false;
+		while (m.find()) {
+			String key = m.group(2);
+			if (key == null) {
+				continue;
+			}
+			String value = m.group(3);
+			params.put(key, value);
+			found = true;
+		}
+
+		if (!found) {
+			addComments(params, values);
+		}
+	}
+
+	private void addValue(Map<String, String> params, String key, double d) {
+		params.put(key, String.format("%.0f", d));
+	}
+
+	private void clear(Map<String, String> params, String key) {
+		params.remove(key);
+	}
+
 	private KeyFrame getKeyFrame(double timestamp) {
 		if (keyFrame == null || keyFrame.getTimestamp() != timestamp) {
 			KeyFrameInterpolator interpolator = new KeyFrameInterpolator();
@@ -140,6 +145,60 @@ public class StraightLine extends AbstractTrajectoryPath {
 	}
 
 	@Override
+	public String getTrajectoryDescription() {
+		StringBuilder sb = new StringBuilder();
+		Point2D last = null;
+		double lastOrientation = 0;
+		Map<String, String> params = new HashMap<String, String>();
+		for (KeyFrame frame : frames) {
+			if (frame.hasComments()) {
+				ArrayList<String> comments = frame.getComments();
+				for (String s : comments) {
+					addParameters(params, s);
+				}
+			}
+
+			TrajectoryMovement movement = frame.getMovement();
+			switch (movement) {
+			case START:
+				last = frame.getPosition();
+				lastOrientation = frame.getOrientation();
+				sb.append(String.format("// start at %s\r\n", last.toString()));
+				break;
+			case BEZIER:
+				break;
+			case CLOTHOID:
+				break;
+			case LINE:
+				Point2D p = frame.getPosition();
+				double distance = p.distance(last);
+				double speed = frame.getMovementSpeed();
+				String direction = speed > 0 ? "forward" : "backward";
+				addComments(params, String.format("// move %s of %.0f mm (%.0f)", direction, distance, 9.557 * distance * Math.signum(speed)));
+				addValue(params, KEY_DISTANCE, 9.557 * distance * Math.signum(speed));
+				// sb.append(String.format("FCM_avancer(%.0f);\r\n", 9.557 * distance * Math.signum(speed)));
+				last = p;
+				break;
+			case NONE:
+				break;
+			case ROTATION:
+				double o = frame.getOrientation();
+				double angle = Angle.getRotationAngle(lastOrientation, o);
+				angle = Math.toDegrees(angle);
+				addComments(params, String.format("// rotation of %.0f° (%.0f)", angle, 22527.5d / 360d * angle));
+				addValue(params, KEY_ANGLE, 22527.5d / 360d * angle);
+				// sb.append(String.format("FCM_tourner(%.0f);\r\n", 22527.5d / 360d * angle));
+				lastOrientation = o;
+				break;
+			default:
+				break;
+			}
+			writeCommands(sb, params);
+		}
+		return sb.toString();
+	}
+
+	@Override
 	public void paint(Graphics2D g, double timestamp) {
 		super.paint(g);
 
@@ -163,6 +222,34 @@ public class StraightLine extends AbstractTrajectoryPath {
 	public void paintUnscaled(Graphics2D g, double timestamp) {
 		if (timestamp == 0d) {
 			super.paintUnscaled(g);
+		}
+	}
+
+	private void writeCommands(StringBuilder sb, Map<String, String> params) {
+		String comments = params.get(KEY_COMMENTS);
+		if (comments != null) {
+			sb.append(comments);
+			clear(params, KEY_COMMENTS);
+		}
+		if (params.containsKey(KEY_ANGLE)) {
+			String v = params.get(KEY_ANGLE);
+			sb.append(String.format("FCM_tourner(%s);\r\n", v));
+			clear(params, KEY_ANGLE);
+		} else if (params.containsKey(KEY_DISTANCE)) {
+			String distance = params.get(KEY_DISTANCE);
+			if (params.containsKey(KEY_NXT)) {
+				String cmd = params.get(KEY_NXT);
+				String delay = params.get(KEY_DELAY);
+				if (delay == null) {
+					delay = "0";
+				}
+				sb.append(String.format("FCM_avancer_et_envoyer_ordre(%s, %s, %s);\r\n", distance, cmd, delay));
+			} else {
+				sb.append(String.format("FCM_avancer(%s);\r\n", distance));
+			}
+			clear(params, KEY_DISTANCE);
+			clear(params, KEY_NXT);
+			clear(params, KEY_DELAY);
 		}
 	}
 }
