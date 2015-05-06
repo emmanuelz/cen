@@ -4,3 +4,7 @@
 
 - poteau : x = 140mm
 - tourner vers la droite, pas vers la gauche
+
+- corriger la transformation affine
+- rotation relative orientée avec angle d'arrivée
+- rotation relative de plus de 180°

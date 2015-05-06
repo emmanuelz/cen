@@ -4,24 +4,16 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 public class KeyFrame implements Comparable<KeyFrame> {
+	private ArrayList<String> comments;
 	private Point2D[] controlPoints;
 	private TrajectoryMovement movement;
 	private double movementSpeed;
+
 	private double orientation;
-
 	private Point2D position;
+
 	private double rotationSpeed;
-
 	private double timestamp;
-	private ArrayList<String> comments;
-
-	public ArrayList<String> getComments() {
-		return comments;
-	}
-
-	public boolean hasComments() {
-		return (comments != null) && (!comments.isEmpty());
-	}
 
 	public KeyFrame(TrajectoryMovement movement, double movementSpeed, double orientation, double rotationSpeed, Point2D position, double timestamp, Point2D... controlPoints) {
 		super();
@@ -34,9 +26,20 @@ public class KeyFrame implements Comparable<KeyFrame> {
 		this.controlPoints = controlPoints;
 	}
 
+	public void addComment(String comment) {
+		if (comments == null) {
+			comments = new ArrayList<String>();
+		}
+		comments.add(comment);
+	}
+
 	@Override
 	public int compareTo(KeyFrame k) {
 		return Double.compare(timestamp, k.timestamp);
+	}
+
+	public ArrayList<String> getComments() {
+		return comments;
 	}
 
 	public Point2D[] getControlPoints() {
@@ -67,10 +70,11 @@ public class KeyFrame implements Comparable<KeyFrame> {
 		return timestamp;
 	}
 
-	public void addComment(String comment) {
-		if (comments == null) {
-			comments = new ArrayList<String>();
-		}
-		comments.add(comment);
+	public boolean hasComments() {
+		return (comments != null) && (!comments.isEmpty());
+	}
+
+	public boolean useRelativeAngle() {
+		return movementSpeed > 0;
 	}
 }

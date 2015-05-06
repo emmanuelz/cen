@@ -68,6 +68,9 @@ public class KeyFrameInterpolator {
 		double startAngle = start.getOrientation();
 		double endAngle = end.getOrientation();
 		double theta = Angle.getRotationAngle(startAngle, endAngle);
+		if (end.useRelativeAngle()) {
+			theta = endAngle - startAngle;
+		}
 		double ds = start.getTimestamp();
 		double duration = end.getTimestamp() - ds;
 		double d = (timestamp - ds) / duration;

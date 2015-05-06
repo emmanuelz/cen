@@ -14,7 +14,8 @@ import org.cen.math.Angle;
 
 public class StraightLine extends AbstractTrajectoryPath {
 	private static final String KEY_ANGLE = "angle";
-	private static final String KEY_COMMENTS = "comments";
+	private static final String KEY_PRECOMMENTS = "preComments";
+	private static final String KEY_POSTCOMMENTS = "postComments";
 	private static final String KEY_DELAY = "delay";
 	private static final String KEY_DISTANCE = "distance";
 	private static final String KEY_NXT = "nxt";
@@ -66,20 +67,31 @@ public class StraightLine extends AbstractTrajectoryPath {
 		setProperty(KEY_DESCRIPTION, description);
 	}
 
-	private void addComments(Map<String, String> params, String values) {
-		String c = params.get(KEY_COMMENTS);
+	private void addComments(Map<String, String> params, String values, boolean preComments) {
+		String c;
+		if (preComments) {
+			c = params.get(KEY_PRECOMMENTS);
+		} else {
+			c = params.get(KEY_POSTCOMMENTS);
+		}
+
 		if (c != null) {
 			c += values;
 		} else {
 			c = values;
 		}
 		c += "\r\n";
-		params.put(KEY_COMMENTS, c);
+
+		if (preComments) {
+			params.put(KEY_PRECOMMENTS, c);
+		} else {
+			params.put(KEY_POSTCOMMENTS, c);
+		}
 	}
 
 	private void addParameters(Map<String, String> params, String values) {
 		if (values.startsWith("//")) {
-			addComments(params, values);
+			addComments(params, values, false);
 			return;
 		}
 
@@ -97,7 +109,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 		}
 
 		if (!found) {
-			addComments(params, values);
+			addComments(params, values, false);
 		}
 	}
 
@@ -174,9 +186,8 @@ public class StraightLine extends AbstractTrajectoryPath {
 				double distance = p.distance(last);
 				double speed = frame.getMovementSpeed();
 				String direction = speed > 0 ? "forward" : "backward";
-				addComments(params, String.format("// move %s of %.0f mm (%.0f)", direction, distance, 9.557 * distance * Math.signum(speed)));
+				addComments(params, String.format("// move %s of %.0f mm (%.0f)", direction, distance, 9.557 * distance * Math.signum(speed)), true);
 				addValue(params, KEY_DISTANCE, 9.557 * distance * Math.signum(speed));
-				// sb.append(String.format("FCM_avancer(%.0f);\r\n", 9.557 * distance * Math.signum(speed)));
 				last = p;
 				break;
 			case NONE:
@@ -184,10 +195,13 @@ public class StraightLine extends AbstractTrajectoryPath {
 			case ROTATION:
 				double o = frame.getOrientation();
 				double angle = Angle.getRotationAngle(lastOrientation, o);
+				if (frame.useRelativeAngle()) {
+					// the angle is a relative angle that can be > 180°
+					angle = o - lastOrientation;
+				}
 				angle = Math.toDegrees(angle);
-				addComments(params, String.format("// rotation of %.0f° (%.0f)", angle, 22527.5d / 360d * angle));
+				addComments(params, String.format("// rotation of %.0f° (%.0f)", angle, 22527.5d / 360d * angle), true);
 				addValue(params, KEY_ANGLE, 22527.5d / 360d * angle);
-				// sb.append(String.format("FCM_tourner(%.0f);\r\n", 22527.5d / 360d * angle));
 				lastOrientation = o;
 				break;
 			default:
@@ -226,11 +240,12 @@ public class StraightLine extends AbstractTrajectoryPath {
 	}
 
 	private void writeCommands(StringBuilder sb, Map<String, String> params) {
-		String comments = params.get(KEY_COMMENTS);
+		String comments = params.get(KEY_PRECOMMENTS);
 		if (comments != null) {
 			sb.append(comments);
-			clear(params, KEY_COMMENTS);
+			clear(params, KEY_PRECOMMENTS);
 		}
+
 		if (params.containsKey(KEY_ANGLE)) {
 			String v = params.get(KEY_ANGLE);
 			sb.append(String.format("FCM_tourner(%s);\r\n", v));
@@ -250,6 +265,12 @@ public class StraightLine extends AbstractTrajectoryPath {
 			clear(params, KEY_DISTANCE);
 			clear(params, KEY_NXT);
 			clear(params, KEY_DELAY);
+		}
+
+		comments = params.get(KEY_POSTCOMMENTS);
+		if (comments != null) {
+			sb.append(comments);
+			clear(params, KEY_POSTCOMMENTS);
 		}
 	}
 }

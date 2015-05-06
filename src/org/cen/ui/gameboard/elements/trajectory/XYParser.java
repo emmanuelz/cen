@@ -202,24 +202,22 @@ public class XYParser extends AbstractTrajectoryParser {
 		double distance = s.nextDouble();
 		CommonData data = parseCommon(s);
 
-		double x = distance * Math.cos(lastAngle);
-		double y = distance * Math.sin(lastAngle);
-
-		x = lastx + transformCoordinate(x, xScale, xTranslation);
-		y = lasty + transformCoordinate(y, yScale, yTranslation);
+		double angle = lastAngle;
+		double x = lastx + distance * Math.cos(angle);
+		double y = lasty + distance * Math.sin(angle);
 
 		handleXYCoordinates(x, y, data);
 	}
 
 	private void parseRotation(Scanner s) {
-		double theta = readAngle(s);
+		double theta = Math.toRadians(s.nextDouble()) * angleScale;
 		CommonData data = parseCommon(s);
 
 		double angle = lastAngle + theta;
 
 		Point2D p = new Point2D.Double(lastx, lasty);
 		timestamp += getRotationDuration(Math.abs(theta), data.rotationSpeed);
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, data.linearSpeed, angle, data.rotationSpeed, p, timestamp);
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 1, angle, data.rotationSpeed, p, timestamp);
 		frames.add(frame);
 
 		addAdditionalTime(p, angle, data.additionalTime);
