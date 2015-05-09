@@ -180,12 +180,36 @@ public class XYParser extends AbstractTrajectoryParser {
 			case 'd':
 				parseStraightDistance(s);
 				break;
+			case 'o':
+				parseOrientation(s);
+				break;
 			default:
 				throw new ParseException("unexpected value: " + type, 0);
 			}
 		} finally {
 			s.close();
 		}
+	}
+
+	private void parseOrientation(Scanner s) {
+		double finalAngle = readAngle(s);
+		double signum = Math.signum(s.nextDouble());
+		double theta = Angle.getRotationAngle(lastAngle, finalAngle);
+		if (Math.signum(theta) != signum) {
+			theta += 2 * Angle.PI2 * signum;
+		}
+		CommonData data = parseCommon(s);
+
+		double angle = lastAngle + theta;
+
+		Point2D p = new Point2D.Double(lastx, lasty);
+		timestamp += getRotationDuration(Math.abs(theta), data.rotationSpeed);
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 1, angle, data.rotationSpeed, p, timestamp);
+		frames.add(frame);
+
+		addAdditionalTime(p, angle, data.additionalTime);
+
+		lastAngle = angle;// % Angle.PIx2;
 	}
 
 	private void parseComment(String line) {
