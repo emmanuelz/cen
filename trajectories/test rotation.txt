@@ -1,0 +1,99 @@
+// Chaque ligne représente un mouvement
+// Paramètres :
+//   - t : type de trajectoire
+//   - x;y : coordonnées x;y du point de destination en mm
+//   - o : angle de l'orientation en degrés
+//   - vl : vitesse linéaire en mm/s
+//   - va : vitesse angulaire en tour/s
+//   - cx1;cy1, ..., cxn;cyn: coordonnées x;y du n-ième point de contrôle en mm
+//   - ta : temps additionnel en fin de mouvement en s (correspond à la durée d'une action, d'un temps d'attente, etc.) 
+// Unités : distances en mm, temps en s, angles en degrés
+// Axes : x = largeur, y = longueur, repère direct (angle 0° correspond au sens des x croissants, 90° au sens des y croissants)
+// Types de trajectoires :
+//   - t : transformation affine : sx;tx;sy;ty;sa;ta
+//   - i : positionnement et angle initiaux, vitesses par défaut : t;x;y;o;vl;va;ta
+//   - s : segment : t;x;y;vl;va;ta
+//   - b : courbe de Bézier quadratique : t;x;y;cx1;cy1;cx2;cy2;vl;va;ta
+//   - d : distance droite : distance
+//   - r : rotation sur place : angle
+
+t;1;0;-1;3000;-1;0
+i;1000;210;90;200;0,2;0
+s;1000;535
+r;24
+
+c;delay_s(1);
+c;// Sortir attrape balles
+c;FCM_envoyer_ordre_NXT(10);
+c;delay_s(1);
+c;// Rentrer attrape balles
+c;FCM_envoyer_ordre_NXT(9);
+c;delay_s(1);
+c;// Fermeture de la pince
+c;FCM_envoyer_ordre_NXT(3);
+c;delay_s(1);
+c;// Rouvrir de la pince
+c;FCM_envoyer_ordre_NXT(4);
+
+c;// Tirette
+c;FCM_attendre_tirette();
+c;// Premiere trajectoire avec ordre special 32 demarer NXT puis fermer pince
+c;//c;nxt=32;delay=10
+s;887;783;200;0,2;1
+c;//
+c;//
+c;//
+s;185;300;-200;0,2
+c;// sortir actionneur attrape balle (9)
+c;FCM_envoyer_ordre_NXT(9);
+s;175;300;-200;0,2;3
+c;// descendre 2 balles
+c;FCM_envoyer_ordre_NXT(11);
+c;// attente des balles
+c;delay_s(1);
+d;10
+s;185;600
+r;-90;200;0,2;3
+d;-10;-200;0,2;1
+c;// attente des balles
+c;delay_s(1);
+s;450;600;200;0,2;1
+s;200;760;-200;0,2;1
+
+//******************************************
+c;//
+c;//
+c;// Sortir attrape poteau
+c;FCM_envoyer_ordre_NXT(2);
+
+//Anciene rotation:
+//r;-180;200;0,2;3
+
+//Nouvelle rotationn:
+o;-10;-45
+
+//Petite ligne droite pour verifier l'angle à la fin de la rotation
+d;100;200;0,2
+
+//Segment suivant ( Je propose de remplacer ce "s" par un "d", pour éviter de refaire un petit bout de rotation)
+s;900;600
+//******************************************
+c;//
+c;//
+
+s;1080;250
+c;// poser verre, sortir guides, vider 2 balles
+c;FCM_envoyer_ordre_NXT(4);
+c;FCM_envoyer_ordre_NXT(11);
+c;delay_ms(500);
+d;-50;-200;0,2
+r;-30;200;0,2;3
+c;// Remonter attrape poteau
+c;FCM_envoyer_ordre_NXT(5);
+s;920;350;-200;0,2
+s;920;175
+c;// Vider toutes les balles
+c;FCM_envoyer_ordre_NXT(12);
+s;920;220;-200;0,2
+
+

@@ -2,13 +2,17 @@ package org.cen.ui.gameboard.elements.trajectory;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 
 import org.cen.math.Angle;
 
 public class XYParser extends AbstractTrajectoryParser {
+	private static final String KEY_ORIENTATION = "orientation";
+
 	private class CommonData {
 		double additionalTime = 0;
 		double linearSpeed = defaultLinearSpeed;
@@ -62,6 +66,46 @@ public class XYParser extends AbstractTrajectoryParser {
 		return duration;
 	}
 
+	private void handleXYCoordinates(double x, double y, CommonData data) throws ParseException {
+		double dx = x - lastx;
+		double dy = y - lasty;
+		double angle = Math.atan2(dy, dx);
+
+		// if linear speed is negative, move backward
+		if (data.linearSpeed < 0) {
+			angle += Math.PI;
+		}
+
+		Point2D p = new Point2D.Double(x, y);
+
+		// initial position
+		if (frames.isEmpty()) {
+			throw new ParseException("initial position has not been defined", 0);
+		}
+
+		double distance = p.distance(lastx, lasty);
+		double theta = Math.abs(Angle.getRotationAngle(lastAngle, angle));
+
+		// rotation
+		if (theta > MIN_ANGLE && distance > MIN_DISTANCE) {
+			timestamp += getRotationDuration(theta, data.rotationSpeed);
+			KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, angle, data.rotationSpeed, new Point2D.Double(lastx, lasty), timestamp);
+			frames.add(frame);
+		}
+
+		// straight line
+		timestamp += distance / Math.abs(data.linearSpeed);
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.LINE, data.linearSpeed, angle, 0, p, timestamp);
+		frames.add(frame);
+
+		// pause
+		addAdditionalTime(p, angle, data.additionalTime);
+
+		lastx = x;
+		lasty = y;
+		lastAngle = angle;
+	}
+
 	private void parseBezier(Scanner s) {
 		// final position
 		double x = readX(s);
@@ -101,6 +145,16 @@ public class XYParser extends AbstractTrajectoryParser {
 		timestamp += distante / data.linearSpeed;
 		KeyFrame frame = new KeyFrame(TrajectoryMovement.BEZIER, data.linearSpeed, endAngle, data.rotationSpeed, p, timestamp, cp1, cp2);
 		frames.add(frame);
+	}
+
+	private void parseComment(String line) {
+		int index = frames.size() - 1;
+		if (index < 0) {
+			return;
+		}
+		KeyFrame frame = frames.get(index);
+		line = line.substring(2);
+		frame.addComment(line);
 	}
 
 	private CommonData parseCommon(Scanner s) {
@@ -193,11 +247,24 @@ public class XYParser extends AbstractTrajectoryParser {
 
 	private void parseOrientation(Scanner s) {
 		double finalAngle = readAngle(s);
-		double signum = Math.signum(s.nextDouble());
+		double minAngle = Math.toRadians(s.nextDouble());
+		double signum = Math.signum(minAngle);
 		double theta = Angle.getRotationAngle(lastAngle, finalAngle);
+		if (Math.abs(theta) < Math.abs(minAngle)) {
+			theta += Angle.PI2 * signum;
+		}
 		if (Math.signum(theta) != signum) {
 			theta += 2 * Angle.PI2 * signum;
 		}
+
+		double opposite = Angle.getRotationAngle(-lastAngle, -finalAngle);
+		if (Math.abs(opposite) < Math.abs(minAngle)) {
+			opposite += Angle.PI2 * signum;
+		}
+		if (Math.signum(opposite) != signum) {
+			opposite += 2 * Angle.PI2 * signum;
+		}
+
 		CommonData data = parseCommon(s);
 
 		double angle = lastAngle + theta;
@@ -205,32 +272,13 @@ public class XYParser extends AbstractTrajectoryParser {
 		Point2D p = new Point2D.Double(lastx, lasty);
 		timestamp += getRotationDuration(Math.abs(theta), data.rotationSpeed);
 		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 1, angle, data.rotationSpeed, p, timestamp);
+		NumberFormat format = NumberFormat.getNumberInstance(Locale.ROOT);
+		frame.addComment(String.format("%s=%s", KEY_ORIENTATION, format.format(opposite)));
 		frames.add(frame);
 
 		addAdditionalTime(p, angle, data.additionalTime);
 
 		lastAngle = angle;// % Angle.PIx2;
-	}
-
-	private void parseComment(String line) {
-		int index = frames.size() - 1;
-		if (index < 0) {
-			return;
-		}
-		KeyFrame frame = frames.get(index);
-		line = line.substring(2);
-		frame.addComment(line);
-	}
-
-	private void parseStraightDistance(Scanner s) throws ParseException {
-		double distance = s.nextDouble();
-		CommonData data = parseCommon(s);
-
-		double angle = lastAngle;
-		double x = lastx + distance * Math.cos(angle);
-		double y = lasty + distance * Math.sin(angle);
-
-		handleXYCoordinates(x, y, data);
 	}
 
 	private void parseRotation(Scanner s) {
@@ -257,44 +305,15 @@ public class XYParser extends AbstractTrajectoryParser {
 		handleXYCoordinates(x, y, data);
 	}
 
-	private void handleXYCoordinates(double x, double y, CommonData data) throws ParseException {
-		double dx = x - lastx;
-		double dy = y - lasty;
-		double angle = Math.atan2(dy, dx);
+	private void parseStraightDistance(Scanner s) throws ParseException {
+		double distance = s.nextDouble();
+		CommonData data = parseCommon(s);
 
-		// if linear speed is negative, move backward
-		if (data.linearSpeed < 0) {
-			angle += Math.PI;
-		}
+		double angle = lastAngle;
+		double x = lastx + distance * Math.cos(angle);
+		double y = lasty + distance * Math.sin(angle);
 
-		Point2D p = new Point2D.Double(x, y);
-
-		// initial position
-		if (frames.isEmpty()) {
-			throw new ParseException("initial position has not been defined", 0);
-		}
-
-		double distance = p.distance(lastx, lasty);
-		double theta = Math.abs(Angle.getRotationAngle(lastAngle, angle));
-
-		// rotation
-		if (theta > MIN_ANGLE && distance > MIN_DISTANCE) {
-			timestamp += getRotationDuration(theta, data.rotationSpeed);
-			KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, angle, data.rotationSpeed, new Point2D.Double(lastx, lasty), timestamp);
-			frames.add(frame);
-		}
-
-		// straight line
-		timestamp += distance / Math.abs(data.linearSpeed);
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.LINE, data.linearSpeed, angle, 0, p, timestamp);
-		frames.add(frame);
-
-		// pause
-		addAdditionalTime(p, angle, data.additionalTime);
-
-		lastx = x;
-		lasty = y;
-		lastAngle = angle;
+		handleXYCoordinates(x, y, data);
 	}
 
 	private void parseTransform(Scanner s) {
@@ -318,17 +337,17 @@ public class XYParser extends AbstractTrajectoryParser {
 		return c;
 	}
 
-	private double transformCoordinate(double value, double scale, double translation) {
-		value *= scale;
-		value += translation;
-		return value;
-	}
-
 	private double readX(Scanner s) {
 		return readCoordinate(s, xScale, xTranslation);
 	}
 
 	private double readY(Scanner s) {
 		return readCoordinate(s, yScale, yTranslation);
+	}
+
+	private double transformCoordinate(double value, double scale, double translation) {
+		value *= scale;
+		value += translation;
+		return value;
 	}
 }

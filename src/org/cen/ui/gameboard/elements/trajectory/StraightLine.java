@@ -19,6 +19,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 	private static final String KEY_DELAY = "delay";
 	private static final String KEY_DISTANCE = "distance";
 	private static final String KEY_NXT = "nxt";
+	private static final String KEY_ORIENTATION = "orientation";
 
 	private ArrayList<KeyFrame> frames;
 
@@ -95,7 +96,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 			return;
 		}
 
-		Pattern p = Pattern.compile("((\\w+)=(\\w+))*");
+		Pattern p = Pattern.compile("((\\w+)=([\\w0-9\\-,\\.]+))*");
 		Matcher m = p.matcher(values);
 		boolean found = false;
 		while (m.find()) {
@@ -202,6 +203,11 @@ public class StraightLine extends AbstractTrajectoryPath {
 				angle = Math.toDegrees(angle);
 				addComments(params, String.format("// rotation of %.0f° (%.0f)", angle, 22527.5d / 360d * angle), true);
 				addValue(params, KEY_ANGLE, 22527.5d / 360d * angle);
+				if (params.containsKey(KEY_ORIENTATION)) {
+					double opposite = getDoubleValue(params, KEY_ORIENTATION);
+					opposite = Math.toDegrees(opposite);
+					addValue(params, KEY_ORIENTATION, 22527.5d / 360d * opposite);
+				}
 				lastOrientation = o;
 				break;
 			default:
@@ -210,6 +216,12 @@ public class StraightLine extends AbstractTrajectoryPath {
 			writeCommands(sb, params);
 		}
 		return sb.toString();
+	}
+
+	private double getDoubleValue(Map<String, String> params, String key) {
+		String value = params.get(key);
+		double d = Double.parseDouble(value);
+		return d;
 	}
 
 	@Override
@@ -246,7 +258,13 @@ public class StraightLine extends AbstractTrajectoryPath {
 			clear(params, KEY_PRECOMMENTS);
 		}
 
-		if (params.containsKey(KEY_ANGLE)) {
+		if (params.containsKey(KEY_ORIENTATION)) {
+			String v = params.get(KEY_ANGLE);
+			String o = params.get(KEY_ORIENTATION);
+			addComments(params, String.format("FCM_tourner_sens_couleur(%s, %s)", v, o), true);
+			clear(params, KEY_ANGLE);
+			clear(params, KEY_ORIENTATION);
+		} else if (params.containsKey(KEY_ANGLE)) {
 			String v = params.get(KEY_ANGLE);
 			sb.append(String.format("FCM_tourner(%s);\r\n", v));
 			clear(params, KEY_ANGLE);
