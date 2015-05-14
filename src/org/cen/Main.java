@@ -209,13 +209,14 @@ public class Main implements IGameBoardEventListener {
 			}
 		});
 
-		list.setPreferredSize(new Dimension(WIDTH_LISTS, HEIGHT_LISTS));
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.anchor = GridBagConstraints.NORTH;
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.VERTICAL;
-		c.add(list, gbc);
+		JScrollPane scroll = new JScrollPane(list);
+		scroll.setPreferredSize(new Dimension(WIDTH_LISTS, HEIGHT_LISTS));
+		c.add(scroll, gbc);
 	}
 
 	protected void addFile(InputFile file) {
@@ -235,13 +236,14 @@ public class Main implements IGameBoardEventListener {
 		InputFilesFactory gaugesFilesFactory = new InputFilesFactory();
 		gaugesController = createList("gauges", "/org/cen/test/gauges", gaugesFilesFactory, InputFileType.GAUGE);
 		JList<IInputFile> list = gaugesController.getList();
-		list.setPreferredSize(new Dimension(WIDTH_LISTS, HEIGHT_LISTS));
+		JScrollPane scroll = new JScrollPane(list);
+		scroll.setPreferredSize(new Dimension(WIDTH_LISTS, HEIGHT_LISTS));
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.anchor = GridBagConstraints.NORTH;
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.VERTICAL;
-		c.add(list, gbc);
+		c.add(scroll, gbc);
 	}
 
 	private void addLabel(Container c, String text) {
@@ -295,8 +297,8 @@ public class Main implements IGameBoardEventListener {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
 
-		final JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, MATCH_DURATION, 0);
-		final JLabel timeLabel = new JLabel("0 s");
+		final JSlider slider = new JSlider(JSlider.HORIZONTAL, -100, MATCH_DURATION, 0);
+		final JLabel timeLabel = new JLabel("-10 s");
 		final JButton playButton = new JButton(TXT_PLAY);
 
 		panel.add(slider);
@@ -375,13 +377,14 @@ public class Main implements IGameBoardEventListener {
 		InputFilesFactory trajectoryFilesFactory = new InputFilesFactory();
 		trajectoriesController = createList("trajectories", "/org/cen/test/trajectories", trajectoryFilesFactory, InputFileType.TRAJECTORY);
 		JList<IInputFile> list = trajectoriesController.getList();
-		list.setPreferredSize(new Dimension(WIDTH_LISTS, HEIGHT_LISTS));
+		JScrollPane scroll = new JScrollPane(list);
+		scroll.setPreferredSize(new Dimension(WIDTH_LISTS, HEIGHT_LISTS));
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
 		gbc.anchor = GridBagConstraints.NORTH;
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.VERTICAL;
-		c.add(list, gbc);
+		c.add(scroll, gbc);
 	}
 
 	private void addTrajectoriesPanel(Container c) {
@@ -492,10 +495,9 @@ public class Main implements IGameBoardEventListener {
 		if (trajectory == null) {
 			return;
 		}
-		
+
 		String description = (String) trajectory.getProperty(ITrajectoryPath.KEY_DESCRIPTION);
 		addToConsole(description);
-
 
 		IGameBoardElement element = (IGameBoardElement) trajectory;
 		elements.add(element);

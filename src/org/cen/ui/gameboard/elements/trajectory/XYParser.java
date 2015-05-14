@@ -7,6 +7,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cen.math.Angle;
 
@@ -84,6 +86,9 @@ public class XYParser extends AbstractTrajectoryParser {
 		}
 
 		double distance = p.distance(lastx, lasty);
+		if (distance == 0) {
+			return;
+		}
 		double theta = Math.abs(Angle.getRotationAngle(lastAngle, angle));
 
 		// rotation
@@ -136,7 +141,7 @@ public class XYParser extends AbstractTrajectoryParser {
 		double theta = Math.abs(Angle.getRotationAngle(lastAngle, startAngle));
 		if (theta > MIN_ANGLE) {
 			timestamp += getRotationDuration(theta, data.rotationSpeed);
-			Point2D last = new Point2D.Double(x, y);
+			Point2D last = new Point2D.Double(lastx, lasty);
 			KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, startAngle, data.rotationSpeed, last, timestamp);
 			frames.add(frame);
 		}
@@ -155,6 +160,47 @@ public class XYParser extends AbstractTrajectoryParser {
 		KeyFrame frame = frames.get(index);
 		line = line.substring(2);
 		frame.addComment(line);
+		parseCommentContent(line, frame);
+	}
+
+	private void parseCommentContent(String line, KeyFrame frame) {
+		Pattern p = Pattern.compile("FCM_envoyer_ordre_NXT\\(([0-9]+)\\);");
+		Matcher m = p.matcher(line);
+		if (m.matches()) {
+			String s = m.group(1);
+			int id = Integer.parseInt(s);
+			int delay = 0;
+			switch (id) {
+			case 1:
+			case 10:
+			case 13:
+				delay = 200;
+				break;
+			case 2:
+				delay = 600;
+				break;
+			case 3:
+			case 9:
+				delay = 50;
+				break;
+			case 4:
+				delay = 800;
+				break;
+			case 5:
+			case 6:
+			case 7:
+			case 8:
+				delay = 300;
+				break;
+			case 12:
+				delay = 6000;
+				break;
+			}
+			if (delay > 0) {
+				frame.addComment(String.format("delay_ms(%d);", delay));
+			}
+			timestamp += 1e-3 * (delay + 300);
+		}
 	}
 
 	private CommonData parseCommon(Scanner s) {
@@ -181,13 +227,14 @@ public class XYParser extends AbstractTrajectoryParser {
 		initialAngle = readAngle(s);
 		defaultLinearSpeed = s.nextDouble();
 		defaultRotationSpeed = s.nextDouble();
+		timestamp = s.nextDouble();
 		double additionalTime = 0;
 		if (s.hasNextDouble()) {
 			additionalTime = s.nextDouble();
 		}
 
 		Double p = new Point2D.Double(x, y);
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.START, 0, initialAngle, 0, p, 0);
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.START, 0, initialAngle, 0, p, timestamp);
 		frames.add(frame);
 
 		addAdditionalTime(p, initialAngle, additionalTime);
@@ -237,12 +284,23 @@ public class XYParser extends AbstractTrajectoryParser {
 			case 'o':
 				parseOrientation(s);
 				break;
+			case 'p':
+				parsePause(s);
+				break;
 			default:
 				throw new ParseException("unexpected value: " + type, 0);
 			}
 		} finally {
 			s.close();
 		}
+	}
+
+	private void parsePause(Scanner s) {
+		double duration = s.nextDouble();
+		Point2D p = new Double(lastx, lasty);
+		timestamp += duration;
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.NONE, 0, lastAngle, 0, p, timestamp);
+		frames.add(frame);
 	}
 
 	private void parseOrientation(Scanner s) {
@@ -312,6 +370,8 @@ public class XYParser extends AbstractTrajectoryParser {
 		double angle = lastAngle;
 		double x = lastx + distance * Math.cos(angle);
 		double y = lasty + distance * Math.sin(angle);
+
+		data.linearSpeed = Math.copySign(data.linearSpeed, Math.signum(distance));
 
 		handleXYCoordinates(x, y, data);
 	}

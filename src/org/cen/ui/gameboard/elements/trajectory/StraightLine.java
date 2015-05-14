@@ -162,6 +162,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 		StringBuilder sb = new StringBuilder();
 		Point2D last = null;
 		double lastOrientation = 0;
+		double lastTimestamp = 0;
 		Map<String, String> params = new HashMap<String, String>();
 		for (KeyFrame frame : frames) {
 			if (frame.hasComments()) {
@@ -192,6 +193,8 @@ public class StraightLine extends AbstractTrajectoryPath {
 				last = p;
 				break;
 			case NONE:
+				double delay = frame.getTimestamp() - lastTimestamp;
+				addComments(params, String.format("delay_ms(%.0f);", delay * 1000), true);
 				break;
 			case ROTATION:
 				double o = frame.getOrientation();
@@ -213,6 +216,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 			default:
 				break;
 			}
+			lastTimestamp = frame.getTimestamp();
 			writeCommands(sb, params);
 		}
 		return sb.toString();
@@ -261,7 +265,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 		if (params.containsKey(KEY_ORIENTATION)) {
 			String v = params.get(KEY_ANGLE);
 			String o = params.get(KEY_ORIENTATION);
-			addComments(params, String.format("FCM_tourner_sens_couleur(%s, %s)", v, o), true);
+			addComments(params, String.format("FCM_tourner_sens_couleur(%s, %s);", v, o), true);
 			clear(params, KEY_ANGLE);
 			clear(params, KEY_ORIENTATION);
 		} else if (params.containsKey(KEY_ANGLE)) {
