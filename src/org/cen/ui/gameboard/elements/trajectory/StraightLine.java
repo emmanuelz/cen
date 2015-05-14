@@ -14,12 +14,13 @@ import org.cen.math.Angle;
 
 public class StraightLine extends AbstractTrajectoryPath {
 	private static final String KEY_ANGLE = "angle";
-	private static final String KEY_PRECOMMENTS = "preComments";
-	private static final String KEY_POSTCOMMENTS = "postComments";
 	private static final String KEY_DELAY = "delay";
 	private static final String KEY_DISTANCE = "distance";
 	private static final String KEY_NXT = "nxt";
 	private static final String KEY_ORIENTATION = "orientation";
+	private static final String KEY_PAUSE = "pause";
+	private static final String KEY_POSTCOMMENTS = "postComments";
+	private static final String KEY_PRECOMMENTS = "preComments";
 
 	private ArrayList<KeyFrame> frames;
 
@@ -122,6 +123,12 @@ public class StraightLine extends AbstractTrajectoryPath {
 		params.remove(key);
 	}
 
+	private double getDoubleValue(Map<String, String> params, String key) {
+		String value = params.get(key);
+		double d = Double.parseDouble(value);
+		return d;
+	}
+
 	private KeyFrame getKeyFrame(double timestamp) {
 		if (keyFrame == null || keyFrame.getTimestamp() != timestamp) {
 			KeyFrameInterpolator interpolator = new KeyFrameInterpolator();
@@ -153,6 +160,12 @@ public class StraightLine extends AbstractTrajectoryPath {
 	}
 
 	@Override
+	public double getSourceLine(double timestamp) {
+		KeyFrame frame = getKeyFrame(timestamp);
+		return frame.getSourceLine();
+	}
+
+	@Override
 	public Point2D[] getTrajectoryControlPoints() {
 		return null;
 	}
@@ -165,6 +178,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 		double lastTimestamp = 0;
 		Map<String, String> params = new HashMap<String, String>();
 		for (KeyFrame frame : frames) {
+			writeLine(sb, frame);
 			if (frame.hasComments()) {
 				ArrayList<String> comments = frame.getComments();
 				for (String s : comments) {
@@ -193,8 +207,8 @@ public class StraightLine extends AbstractTrajectoryPath {
 				last = p;
 				break;
 			case NONE:
-				double delay = frame.getTimestamp() - lastTimestamp;
-				addComments(params, String.format("delay_ms(%.0f);", delay * 1000), true);
+				// double delay = frame.getTimestamp() - lastTimestamp;
+				// addComments(params, String.format("delay_ms(%.0f);", delay * 1000), true);
 				break;
 			case ROTATION:
 				double o = frame.getOrientation();
@@ -220,12 +234,6 @@ public class StraightLine extends AbstractTrajectoryPath {
 			writeCommands(sb, params);
 		}
 		return sb.toString();
-	}
-
-	private double getDoubleValue(Map<String, String> params, String key) {
-		String value = params.get(key);
-		double d = Double.parseDouble(value);
-		return d;
 	}
 
 	@Override
@@ -288,11 +296,26 @@ public class StraightLine extends AbstractTrajectoryPath {
 			clear(params, KEY_NXT);
 			clear(params, KEY_DELAY);
 		}
+		if (params.containsKey(KEY_PAUSE)) {
+			String v = params.get(KEY_PAUSE);
+			int d = Integer.parseInt(v);
+			while (d > 255) {
+				sb.append("delay_ms(255);\r\n");
+				d -= 255;
+			}
+			sb.append(String.format("delay_ms(%d);\r\n", d));
+			clear(params, KEY_PAUSE);
+		}
 
 		comments = params.get(KEY_POSTCOMMENTS);
 		if (comments != null) {
 			sb.append(comments);
 			clear(params, KEY_POSTCOMMENTS);
 		}
+	}
+
+	private void writeLine(StringBuilder sb, KeyFrame frame) {
+		int line = frame.getSourceLine();
+		sb.append(String.format("// line %d\r\n", line));
 	}
 }

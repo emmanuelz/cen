@@ -13,13 +13,15 @@ import java.util.regex.Pattern;
 import org.cen.math.Angle;
 
 public class XYParser extends AbstractTrajectoryParser {
-	private static final String KEY_ORIENTATION = "orientation";
-
 	private class CommonData {
 		double additionalTime = 0;
 		double linearSpeed = defaultLinearSpeed;
 		double rotationSpeed = defaultRotationSpeed;
 	}
+
+	private static final String KEY_ORIENTATION = "orientation";
+
+	private static final Object KEY_PAUSE = "pause";
 
 	private static final double MIN_ANGLE = Math.toRadians(0.5);
 	private static final double MIN_DISTANCE = 0.1;
@@ -34,6 +36,7 @@ public class XYParser extends AbstractTrajectoryParser {
 	private double lastAngle = 0;
 	private double lastx = 0;
 	private double lasty = 0;
+	private int sourceLine = 0;
 	private double timestamp = 0;
 	private double xScale = 1;
 	private double xTranslation = 0;
@@ -52,7 +55,7 @@ public class XYParser extends AbstractTrajectoryParser {
 	private void addAdditionalTime(Point2D position, double angle, double additionalTime) {
 		if (additionalTime > 0) {
 			timestamp += additionalTime;
-			KeyFrame frame = new KeyFrame(TrajectoryMovement.NONE, 0, angle, 0, position, timestamp);
+			KeyFrame frame = new KeyFrame(TrajectoryMovement.NONE, 0, angle, 0, position, timestamp, sourceLine);
 			frames.add(frame);
 		}
 	}
@@ -94,13 +97,13 @@ public class XYParser extends AbstractTrajectoryParser {
 		// rotation
 		if (theta > MIN_ANGLE && distance > MIN_DISTANCE) {
 			timestamp += getRotationDuration(theta, data.rotationSpeed);
-			KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, angle, data.rotationSpeed, new Point2D.Double(lastx, lasty), timestamp);
+			KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, angle, data.rotationSpeed, new Point2D.Double(lastx, lasty), timestamp, sourceLine);
 			frames.add(frame);
 		}
 
 		// straight line
 		timestamp += distance / Math.abs(data.linearSpeed);
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.LINE, data.linearSpeed, angle, 0, p, timestamp);
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.LINE, data.linearSpeed, angle, 0, p, timestamp, sourceLine);
 		frames.add(frame);
 
 		// pause
@@ -142,13 +145,13 @@ public class XYParser extends AbstractTrajectoryParser {
 		if (theta > MIN_ANGLE) {
 			timestamp += getRotationDuration(theta, data.rotationSpeed);
 			Point2D last = new Point2D.Double(lastx, lasty);
-			KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, startAngle, data.rotationSpeed, last, timestamp);
+			KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, startAngle, data.rotationSpeed, last, timestamp, sourceLine);
 			frames.add(frame);
 		}
 
 		double distante = p.distance(lastx, lasty);
 		timestamp += distante / data.linearSpeed;
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.BEZIER, data.linearSpeed, endAngle, data.rotationSpeed, p, timestamp, cp1, cp2);
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.BEZIER, data.linearSpeed, endAngle, data.rotationSpeed, p, timestamp, sourceLine, cp1, cp2);
 		frames.add(frame);
 	}
 
@@ -196,6 +199,10 @@ public class XYParser extends AbstractTrajectoryParser {
 				delay = 6000;
 				break;
 			}
+			while (delay > 255) {
+				frame.addComment("delay_ms(255);");
+				delay -= 255;
+			}
 			if (delay > 0) {
 				frame.addComment(String.format("delay_ms(%d);", delay));
 			}
@@ -234,7 +241,7 @@ public class XYParser extends AbstractTrajectoryParser {
 		}
 
 		Double p = new Point2D.Double(x, y);
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.START, 0, initialAngle, 0, p, timestamp);
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.START, 0, initialAngle, 0, p, timestamp, sourceLine);
 		frames.add(frame);
 
 		addAdditionalTime(p, initialAngle, additionalTime);
@@ -246,6 +253,7 @@ public class XYParser extends AbstractTrajectoryParser {
 
 	@Override
 	public void parseLine(String line) throws ParseException {
+		sourceLine++;
 		Scanner s = new Scanner(line);
 		try {
 			s.useDelimiter(delimiter);
@@ -295,14 +303,6 @@ public class XYParser extends AbstractTrajectoryParser {
 		}
 	}
 
-	private void parsePause(Scanner s) {
-		double duration = s.nextDouble();
-		Point2D p = new Double(lastx, lasty);
-		timestamp += duration;
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.NONE, 0, lastAngle, 0, p, timestamp);
-		frames.add(frame);
-	}
-
 	private void parseOrientation(Scanner s) {
 		double finalAngle = readAngle(s);
 		double minAngle = Math.toRadians(s.nextDouble());
@@ -329,7 +329,7 @@ public class XYParser extends AbstractTrajectoryParser {
 
 		Point2D p = new Point2D.Double(lastx, lasty);
 		timestamp += getRotationDuration(Math.abs(theta), data.rotationSpeed);
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 1, angle, data.rotationSpeed, p, timestamp);
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 1, angle, data.rotationSpeed, p, timestamp, sourceLine);
 		NumberFormat format = NumberFormat.getNumberInstance(Locale.ROOT);
 		frame.addComment(String.format("%s=%s", KEY_ORIENTATION, format.format(opposite)));
 		frames.add(frame);
@@ -337,6 +337,15 @@ public class XYParser extends AbstractTrajectoryParser {
 		addAdditionalTime(p, angle, data.additionalTime);
 
 		lastAngle = angle;// % Angle.PIx2;
+	}
+
+	private void parsePause(Scanner s) {
+		double duration = s.nextDouble();
+		Point2D p = new Double(lastx, lasty);
+		timestamp += duration;
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.NONE, 0, lastAngle, 0, p, timestamp, sourceLine);
+		frame.addComment(String.format("%s=%.0f", KEY_PAUSE, duration * 1000));
+		frames.add(frame);
 	}
 
 	private void parseRotation(Scanner s) {
@@ -347,7 +356,7 @@ public class XYParser extends AbstractTrajectoryParser {
 
 		Point2D p = new Point2D.Double(lastx, lasty);
 		timestamp += getRotationDuration(Math.abs(theta), data.rotationSpeed);
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 1, angle, data.rotationSpeed, p, timestamp);
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 1, angle, data.rotationSpeed, p, timestamp, sourceLine);
 		frames.add(frame);
 
 		addAdditionalTime(p, angle, data.additionalTime);

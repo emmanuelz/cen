@@ -12,8 +12,7 @@ public interface ITrajectoryPath {
 	public static final String KEY_DESCRIPTION = "description";
 
 	/**
-	 * Returns the interface representing the gauge of the object used to render
-	 * the footprint of the trajectory.
+	 * Returns the interface representing the gauge of the object used to render the footprint of the trajectory.
 	 * 
 	 * @return the gauge of the object which this trajectory is related to
 	 */
@@ -45,16 +44,14 @@ public interface ITrajectoryPath {
 	/**
 	 * Returns the orientation of the robot when ending the trajectory.
 	 * 
-	 * @return the orientation of the robot when ending the trajectory in
-	 *         radians
+	 * @return the orientation of the robot when ending the trajectory in radians
 	 */
 	public double getRobotFinalAngle();
 
 	/**
 	 * Returns the orientation of the robot when starting the trajectory.
 	 * 
-	 * @return the orientation of the robot when starting the trajectory in
-	 *         radians
+	 * @return the orientation of the robot when starting the trajectory in radians
 	 */
 	public double getRobotInitialAngle();
 
@@ -87,8 +84,7 @@ public interface ITrajectoryPath {
 	public Point2D getTrajectoryStart();
 
 	/**
-	 * Sets the interface representing the gauge of the object used to render
-	 * the footprint of the trajectory.
+	 * Sets the interface representing the gauge of the object used to render the footprint of the trajectory.
 	 * 
 	 * @param gauge
 	 *            the gauge of the object which this trajectory is related to

@@ -23,6 +23,15 @@ public interface IGameBoardTimedElement extends IGameBoardElement {
 	public Point2D getPosition(double timestamp);
 
 	/**
+	 * Returns the line number in the source file. 0 if not handled.
+	 * 
+	 * @param timestamp
+	 *            the timestamp
+	 * @return the line number in the source file
+	 */
+	double getSourceLine(double timestamp);
+
+	/**
 	 * Paints the element on the specified graphic device.
 	 * 
 	 * @param g

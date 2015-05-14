@@ -78,6 +78,11 @@ public abstract class AbstractTrajectoryPath extends AbstractGameBoardElement im
 		return initialAngle;
 	}
 
+	@Override
+	public double getSourceLine(double timestamp) {
+		return 0;
+	}
+
 	private Stroke getStroke() {
 		return stroke;
 	}
