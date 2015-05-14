@@ -215,7 +215,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 				double angle = Angle.getRotationAngle(lastOrientation, o);
 				if (frame.useRelativeAngle()) {
 					// the angle is a relative angle that can be > 180°
-					angle = o - lastOrientation;
+					angle = frame.getRelativeAngle();
 				}
 				angle = Math.toDegrees(angle);
 				addComments(params, String.format("// rotation of %.0f° (%.0f)", angle, 22527.5d / 360d * angle), true);

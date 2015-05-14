@@ -12,15 +12,17 @@ public class KeyFrame implements Comparable<KeyFrame> {
 	private double orientation;
 	private Point2D position;
 
+	private double relativeAngle;
 	private double rotationSpeed;
 	private int sourceLine;
 	private double timestamp;
 
-	public KeyFrame(TrajectoryMovement movement, double movementSpeed, double orientation, double rotationSpeed, Point2D position, double timestamp, int sourceLine, Point2D... controlPoints) {
+	public KeyFrame(TrajectoryMovement movement, double movementSpeed, double orientation, double relativeAngle, double rotationSpeed, Point2D position, double timestamp, int sourceLine, Point2D... controlPoints) {
 		super();
 		this.movement = movement;
 		this.movementSpeed = movementSpeed;
 		this.orientation = orientation;
+		this.relativeAngle = relativeAngle;
 		this.rotationSpeed = rotationSpeed;
 		this.position = position;
 		this.timestamp = timestamp;
@@ -64,6 +66,10 @@ public class KeyFrame implements Comparable<KeyFrame> {
 		return position;
 	}
 
+	public double getRelativeAngle() {
+		return relativeAngle;
+	}
+
 	public double getRotationSpeed() {
 		return rotationSpeed;
 	}
@@ -81,6 +87,6 @@ public class KeyFrame implements Comparable<KeyFrame> {
 	}
 
 	public boolean useRelativeAngle() {
-		return movementSpeed > 0;
+		return relativeAngle != 0;
 	}
 }

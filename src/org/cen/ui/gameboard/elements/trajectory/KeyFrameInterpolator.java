@@ -11,7 +11,7 @@ import org.cen.math.Bezier;
 public class KeyFrameInterpolator {
 	private class KeyFrameSearch extends KeyFrame {
 		public KeyFrameSearch(double timestamp) {
-			super(null, 0, 0, 0, null, timestamp, 0);
+			super(null, 0, 0, 0, 0, null, timestamp, 0);
 		}
 	}
 
@@ -60,7 +60,7 @@ public class KeyFrameInterpolator {
 		Point2D p = Bezier.getPoint(d, s, points[0], points[1], e);
 		double angle = Bezier.getAngle(d, s, points[0], points[1], e);
 
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.BEZIER, start.getMovementSpeed(), angle, 0, p, timestamp, start.getSourceLine(), points);
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.BEZIER, start.getMovementSpeed(), angle, 0, 0, p, timestamp, start.getSourceLine(), points);
 		return frame;
 	}
 
@@ -77,7 +77,7 @@ public class KeyFrameInterpolator {
 		double angle = startAngle + d * theta;
 		Point2D p = start.getPosition();
 
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, angle, start.getRotationSpeed(), p, timestamp, start.getSourceLine());
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.ROTATION, 0, angle, 0, start.getRotationSpeed(), p, timestamp, start.getSourceLine());
 		return frame;
 	}
 
@@ -95,7 +95,7 @@ public class KeyFrameInterpolator {
 		double y = y1 + d * (y2 - y1);
 		Double p = new Point2D.Double(x, y);
 
-		KeyFrame frame = new KeyFrame(TrajectoryMovement.LINE, start.getMovementSpeed(), end.getOrientation(), 0, p, timestamp, start.getSourceLine());
+		KeyFrame frame = new KeyFrame(TrajectoryMovement.LINE, start.getMovementSpeed(), end.getOrientation(), 0, 0, p, timestamp, start.getSourceLine());
 		return frame;
 	}
 }
