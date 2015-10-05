@@ -65,7 +65,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.cen.cup.cup2015.gameboard.GameBoard2015;
+import org.cen.cup.cup2016.gameboard.GameBoard2016;
 import org.cen.services.InputData;
 import org.cen.services.InputParser;
 import org.cen.trajectories.IInputFile;
@@ -225,7 +225,7 @@ public class Main implements IGameBoardEventListener {
 	}
 
 	private void addGameBoard(Container c) {
-		gameBoard = new GameBoard2015();
+		gameBoard = new GameBoard2016();
 		gameBoardView = new GameBoardView(gameBoard);
 		gameBoardView.setPreferredSize(new Dimension(640, 480));
 		gameBoardView.addGameBoardEventListener(this);

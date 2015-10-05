@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 
 import org.cen.ui.gameboard.AbstractGameBoardElement;
+import org.cen.ui.gameboard.RALColor;
 
 public class Border extends AbstractGameBoardElement {
 	public static String BORDER_WIDTH = "borderWidth";
@@ -26,5 +27,7 @@ public class Border extends AbstractGameBoardElement {
 	public void paint(Graphics2D g) {
 		g.setColor(color);
 		g.fillRect(0, 0, (int) length, (int) width);
+		g.setColor(RALColor.RAL_9005);
+		g.drawRect(0, 0, (int) length, (int) width);
 	}
 }
