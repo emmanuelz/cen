@@ -36,14 +36,14 @@ public class TrajectoryStroke implements Stroke {
 
 	public Shape createStrokedShape(Shape shape) {
 		Area area = new Area();
-		// PathIterator it = new
-		// FlatteningPathIterator(shape.getPathIterator(null), FLATNESS);
+		// PathIterator it = new FlatteningPathIterator(shape.getPathIterator(null), FLATNESS);
 		PathIterator it = shape.getPathIterator(null);
 		double points[] = new double[6];
 		double lastX = 0, lastY = 0;
 		double thisX = 0, thisY = 0;
 		double lastAngle = initialAngle;
 		int type = 0;
+		boolean backward = false;
 
 		while (!it.isDone()) {
 			type = it.currentSegment(points);
@@ -52,6 +52,7 @@ public class TrajectoryStroke implements Stroke {
 				// extra moveto are used for backward moves
 				if (lastX == points[0] && lastY == points[1]) {
 					lastAngle += Math.PI;
+					backward = !backward;
 				}
 				lastX = points[0];
 				lastY = points[1];
@@ -77,6 +78,11 @@ public class TrajectoryStroke implements Stroke {
 					end = lastAngle + theta;
 				}
 
+				if (backward) {
+					start += Math.PI;
+					end += Math.PI;
+				}
+
 				for (double i = start; i < end; i += STEP_ANGLE) {
 					addArea(area, t, lastX, lastY, i, 0, 0);
 				}
@@ -88,10 +94,16 @@ public class TrajectoryStroke implements Stroke {
 					continue;
 				}
 
-				for (int i = 0; i < distance; i += STEP_DISTANCE) {
-					addArea(area, t, lastX, lastY, angle, i, 0);
+				double signum = 1.0;
+				if (backward) {
+					angle += Math.PI;
+					signum = -1.0;
 				}
-				addArea(area, t, lastX, lastY, angle, distance, 0);
+
+				for (int i = 0; i < distance; i += STEP_DISTANCE) {
+					addArea(area, t, lastX, lastY, angle, signum * i, 0);
+				}
+				addArea(area, t, lastX, lastY, angle, signum * distance, 0);
 
 				lastX = thisX;
 				lastY = thisY;

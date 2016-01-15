@@ -1,0 +1,17 @@
+// Robot de Bernard
+
+// (0, 0) milieu de l'axe moteur
+// abscisses positives dans le sens de la marche avant
+// repère direct, unité mm
+
+path.moveTo(62.5, 146);
+path.lineTo(-62.5, 146);
+path.lineTo(-112.5, 75);
+path.lineTo(-112.5, -75);
+path.lineTo(-62.5, -146);
+path.lineTo(62.5, -146);
+path.lineTo(152.5, -126);
+path.lineTo(187.5, -126);
+path.lineTo(187.5, 126);
+path.lineTo(152.5, 126);
+path.closePath();

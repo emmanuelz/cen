@@ -16,12 +16,15 @@ import org.cen.cup.cup2015.gameboard.elements.PopCornDispenser;
 import org.cen.cup.cup2015.gameboard.elements.Stand;
 import org.cen.cup.cup2015.gameboard.elements.StartArea;
 import org.cen.cup.cup2015.gameboard.elements.StepsArea;
+import org.cen.trajectories.planner.OrientedPosition;
+import org.cen.trajectories.planner.PlannedTrajectory;
 import org.cen.ui.gameboard.AbstractGameBoard;
 import org.cen.ui.gameboard.GameBoardElementsComparator;
 import org.cen.ui.gameboard.IGameBoardElement;
 import org.cen.ui.gameboard.RALColor;
 import org.cen.ui.gameboard.elements.Board;
 import org.cen.ui.gameboard.elements.Border;
+import org.cen.ui.gameboard.elements.object.MovableRobot;
 
 /**
  * Gameboard for the cup 2015.
@@ -119,7 +122,7 @@ public class GameBoard2015 extends AbstractGameBoard {
 		elements.add(new Stand("stand-a-6", new Point2D.Double(1355, 2130), COLOR_B));
 		elements.add(new Stand("stand-a-7", new Point2D.Double(1770, 1900), COLOR_B));
 		elements.add(new Stand("stand-a-8", new Point2D.Double(1400, 1700), COLOR_B));
-
+		
 		elements.add(new PopCornDispenser("dispenser-a-1", new Point2D.Double(0, 300)));
 		elements.add(new PopCornDispenser("dispenser-a-2", new Point2D.Double(0, 600)));
 		elements.add(new PopCornDispenser("dispenser-b-2", new Point2D.Double(0, 2400)));

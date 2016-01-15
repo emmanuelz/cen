@@ -1,0 +1,36 @@
+// Robot de Bernard
+
+// (0, 0) milieu de l'axe moteur
+// abscisses positives dans le sens de la marche avant
+// repère direct, unité mm
+
+// 11 morceaux
+//
+// -147.5      +131.5
+//    |  |      | 
+// 
+//    |--|      |--| -- +127.5
+//    |  |      |  |
+//    |   ------   | -- +62.5
+//    |            |
+//    |      x     |  x = middle
+//    |            | -- - 62.5 
+//     \          /
+//      \        /
+//       --------    -- -113
+//    |      |   |
+//  -147.5   0  +75
+//
+
+path.moveTo( +62.5,      0);
+path.lineTo( +62.5, -131.5);
+path.lineTo(+127.5, -131.5);
+path.lineTo(+127.5, -147.5);
+path.lineTo( -62.5, -147.5);
+path.lineTo( -113 ,    -75);
+path.lineTo( -113 ,    +75);
+path.lineTo( -62.5, +147.5);
+path.lineTo(+127.5, +147.5);
+path.lineTo(+127.5, +131.5);
+path.lineTo( +62.5, +131.5);
+path.closePath();

@@ -295,12 +295,19 @@ public class XYParser extends AbstractTrajectoryParser {
 			case 'p':
 				parsePause(s);
 				break;
+			case 'a':
+				parseActuator(s);
+				break;
 			default:
 				throw new ParseException("unexpected value: " + type, 0);
 			}
 		} finally {
 			s.close();
 		}
+	}
+
+	private void parseActuator(Scanner s) {
+		// TODO
 	}
 
 	private void parseOrientation(Scanner s) {

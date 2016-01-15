@@ -1,0 +1,43 @@
+// Chaque ligne représente un mouvement
+// Paramètres :
+//   - t : type de trajectoire
+//   - x;y : coordonnées x;y du point de destination en mm
+//   - o : angle de l'orientation en degrés
+//   - vl : vitesse linéaire en mm/s
+//   - va : vitesse angulaire en tour/s
+//   - cx1;cy1, ..., cxn;cyn: coordonnées x;y du n-ième point de contrôle en mm
+//   - ta : temps additionnel en fin de mouvement en s (correspond à la durée d'une action, d'un temps d'attente, etc.) 
+// Unités : distances en mm, temps en s, angles en degrés
+// Axes : x = largeur, y = longueur, repère direct (angle 0° correspond au sens des x croissants, 90° au sens des y croissants)
+// Types de trajectoires :
+//   - t : transformation affine : sx;tx;sy;ty;sa;ta
+//   - i : positionnement et angle initiaux, vitesses par défaut : t;x;y;o;vl;va;ta
+//   - s : segment : t;x;y;vl;va;ta
+//   - b : courbe de Bézier quadratique : t;x;y;cx1;cy1;cx2;cy2;vl;va;ta
+
+//t;1;0;-1;3000;-1;0
+i;1000;200;90;200;0,2;0
+s;1000;650
+s;1650;650
+
+// les claps
+s;1880;250
+s;1880;850
+s;1650;850
+
+// premier goblet
+s;1650;1400;200;0,2;5
+s;1650;2300
+// dépose
+s;1400;2750;200;0,2;5
+// second gobelet
+s;1650;2750;200;0,2;5
+s;1650;2400
+s;550;2400
+// dépose
+s;550;2750;200;0,2;5
+// troisième goblet
+s;770;2200;200;0,2;5
+s;1000;1500
+// dépose
+s;1000;200;200;0,2;5

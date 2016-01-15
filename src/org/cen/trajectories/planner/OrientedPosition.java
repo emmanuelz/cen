@@ -6,6 +6,10 @@ public class OrientedPosition {
 	private Point2D location;
 	private double orientation;
 
+	public OrientedPosition() {
+		this(0, 0, 0);
+	}
+
 	public OrientedPosition(double x, double y, double orientation) {
 		this(new Point2D.Double(x, y), orientation);
 	}
@@ -14,6 +18,10 @@ public class OrientedPosition {
 		super();
 		this.location = location;
 		this.orientation = orientation;
+	}
+
+	public double distance(OrientedPosition point) {
+		return location.distance(point.location);
 	}
 
 	public Point2D getLocation() {
@@ -32,12 +40,22 @@ public class OrientedPosition {
 		return location.getY();
 	}
 
+	public void setOrientation(double orientation) {
+		this.orientation = orientation;
+	}
+
+	public void setX(double x) {
+		double y = getY();
+		location.setLocation(x, y);
+	}
+
+	public void setY(double y) {
+		double x = getX();
+		location.setLocation(x, y);
+	}
+
 	@Override
 	public String toString() {
 		return String.format("%s(%.1f; %.1f; %.1f°)", getClass().getSimpleName(), location.getX(), location.getY(), Math.toDegrees(orientation));
-	}
-
-	public double distance(OrientedPosition point) {
-		return location.distance(point.location);
 	}
 }

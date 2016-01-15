@@ -1,0 +1,58 @@
+// Chaque ligne représente un mouvement
+// Paramètres :
+//   - t : type de trajectoire
+//   - x;y : coordonnées x;y du point de destination en mm
+//   - o : angle de l'orientation en degrés
+//   - vl : vitesse linéaire en mm/s
+//   - va : vitesse angulaire en tour/s
+//   - cx1;cy1, ..., cxn;cyn: coordonnées x;y du n-ième point de contrôle en mm
+//   - ta : temps additionnel en fin de mouvement en s (correspond à la durée d'une action, d'un temps d'attente, etc.) 
+// Unités : distances en mm, temps en s, angles en degrés
+// Axes : x = largeur, y = longueur, repère direct (angle 0° correspond au sens des x croissants, 90° au sens des y croissants)
+// Types de trajectoires :
+//   - t : transformation affine : sx;tx;sy;ty;sa;ta
+//   - i : positionnement et angle initiaux, vitesses par défaut : t;x;y;o;vl;va;ta
+//   - s : segment : t;x;y;vl;va;ta
+//   - b : courbe de Bézier quadratique : t;x;y;cx1;cy1;cx2;cy2;vl;va;ta
+//   - d : distance droite : distance
+//   - r : rotation sur place : angle
+
+//t;1;0;-1;3000;-1;0
+i;1000;210;90;200;0,2;0
+s;1000;535
+r;1224
+c;// Tirette
+c;FCM_attendre_tirette();
+c;// démarrage NXT
+c;FCM_envoyer_ordre_NXT(1);
+c;// sortir actionneur attrape balle (4)
+c;nxt=9;delay=1
+//s;1000;1000
+//s;1000;520
+//s;830;900
+s;887;783;200;0,2;1
+c;// ouverture de la pince
+c;nxt=3;delay=1
+s;185;300;-200;0,2
+c;// sortir actionneur attrape balle (4)
+c;FCM_envoyer_ordre_NXT(9);
+s;175;300;-200;0,2;3
+c;// descendre 2 balles
+c;FCM_envoyer_ordre_NXT(11);
+d;10
+s;185;600
+r;-90;200;0,2;3
+d;-10;-200;0,2;1
+c;// attente des balles
+c;delay_s(2);
+s;900;600
+s;1080;250
+c;// poser verre, sortir guides, vider 2 balles
+c;FCM_envoyer_ordre_NXT(4);
+c;FCM_envoyer_ordre_NXT(11);
+d;-50;-200;0,2
+s;920;350;-200;0,2
+s;920;175
+c;// Vider toutes les balles
+c;FCM_envoyer_ordre_NXT(12);
+s;920;220;-200;0,2

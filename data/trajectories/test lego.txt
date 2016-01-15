@@ -1,0 +1,63 @@
+// Chaque ligne représente un mouvement
+// Paramètres :
+//   - t : type de trajectoire
+//   - x;y : coordonnées x;y du point de destination en mm
+//   - o : angle de l'orientation en degrés
+//   - a : angle de rotation en degrés
+//   - vl : vitesse linéaire en mm/s
+//   - va : vitesse angulaire en tour/s
+//   - cx1;cy1, ..., cxn;cyn: coordonnées x;y du n-ième point de contrôle en mm
+//   - ta : temps additionnel en fin de mouvement en s (correspond à la durée d'une action, d'un temps d'attente, etc.) 
+// Unités : distances en mm, temps en s, angles en degrés
+// Axes : x = largeur, y = longueur, repère direct (angle 0° correspond au sens des x croissants, 90° au sens des y croissants)
+// Types de trajectoires :
+//   - t : transformation affine : sx;tx;sy;ty;sa;ta
+//   - i : positionnement et angle initiaux, vitesses par défaut : t;x;y;o;vl;va;ta
+//   - s : segment : t;x;y;vl;va;ta
+//   - b : courbe de Bézier cubique : t;x;y;cx1;cy1;cx2;cy2;vl;va;ta
+//   - r : rotation : a;vl;va;ta
+
+//t;1;0;-1;3000;-1;0
+i;420;260;90;200;0,2;0
+s;420;2060;200;0,2;2
+// sortir le bras à l'arrivée
+// rotation 65°
+r;65;200;0,2;4
+//s;419,094;2060,423
+// lancer les balles
+s;420;1400
+s;105;1400
+s;780;1400;-200;0,2;0
+//s;980;120;200;0,2;0
+//s;980;105
+//s;980;115;-200;0,2;0
+
+s;800;150
+// bras favorable
+//r;-100
+//r;-125
+
+s;800;250
+
+s;1000;250
+s;1000;105
+s;1000;170;-200;0,2;0
+
+s;1530;170
+s;1850;500
+s;1895;500;200;0,2;0
+s;1830;500;-200;0,2;0
+s;1830;1000
+s;1720;1300
+// bras arrière défavorable
+s;1830;1300;-200;0,2;0
+s;1720;1300
+s;1870;1930
+r;90
+// bras arrière défavorable
+s;1830;2080
+s;1830;2425
+// sortir bras droit
+s;420;2425
+s;410;2425;-200;0,2;0
+// vider les balles

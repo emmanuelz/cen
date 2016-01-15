@@ -8,6 +8,8 @@ import java.awt.GridBagLayout;
 import java.awt.Window.Type;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Point2D;
@@ -26,6 +28,7 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
@@ -54,6 +57,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
+import javax.swing.JTree;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -64,8 +68,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.tree.TreePath;
 
 import org.cen.cup.cup2016.gameboard.GameBoard2016;
+import org.cen.models.MatchModel;
+import org.cen.models.ModelFactory;
+import org.cen.models.ModelType;
+import org.cen.models.trajectories.TrajectoryModel;
+import org.cen.persistance.FileLocations;
 import org.cen.services.InputData;
 import org.cen.services.InputParser;
 import org.cen.trajectories.IInputFile;
@@ -73,6 +83,7 @@ import org.cen.trajectories.InputFile;
 import org.cen.trajectories.InputFileType;
 import org.cen.trajectories.InputFilesFactory;
 import org.cen.ui.CheckListController;
+import org.cen.ui.ConfigurationTreeModel;
 import org.cen.ui.ListController;
 import org.cen.ui.gameboard.AbstractGameBoard;
 import org.cen.ui.gameboard.GameBoardMouseMoveEvent;
@@ -102,7 +113,7 @@ public class Main implements IGameBoardEventListener {
 
 	private static final int WIDTH_LISTS = 200;
 
-	private static final String WORKSPACE_TRAJECTORIES = "workspace\\trajectories.txt";
+	private static final String WORKSPACE_TRAJECTORIES = "data\\workspace\\trajectories.txt";
 
 	/**
 	 * @param args
@@ -179,7 +190,8 @@ public class Main implements IGameBoardEventListener {
 	}
 
 	private void addDisplayedTrajectory(DisplayedTrajectory trajectory) {
-		DefaultListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController.getListModel();
+		DefaultListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController
+				.getListModel();
 		int start = model.getSize();
 		model.addElement(trajectory);
 
@@ -234,7 +246,7 @@ public class Main implements IGameBoardEventListener {
 
 	private void addGaugesList(Container c) {
 		InputFilesFactory gaugesFilesFactory = new InputFilesFactory();
-		gaugesController = createList("gauges", "/org/cen/test/gauges", gaugesFilesFactory, InputFileType.GAUGE);
+		gaugesController = createList("data/gauges", "/org/cen/test/gauges", gaugesFilesFactory, InputFileType.GAUGE);
 		JList<IInputFile> list = gaugesController.getList();
 		JScrollPane scroll = new JScrollPane(list);
 		scroll.setPreferredSize(new Dimension(WIDTH_LISTS, HEIGHT_LISTS));
@@ -375,7 +387,8 @@ public class Main implements IGameBoardEventListener {
 
 	private void addTrajectoriesList(Container c) {
 		InputFilesFactory trajectoryFilesFactory = new InputFilesFactory();
-		trajectoriesController = createList("trajectories", "/org/cen/test/trajectories", trajectoryFilesFactory, InputFileType.TRAJECTORY);
+		trajectoriesController = createList("data/trajectories", "/org/cen/test/trajectories", trajectoryFilesFactory,
+				InputFileType.TRAJECTORY);
 		JList<IInputFile> list = trajectoriesController.getList();
 		JScrollPane scroll = new JScrollPane(list);
 		scroll.setPreferredSize(new Dimension(WIDTH_LISTS, HEIGHT_LISTS));
@@ -416,7 +429,8 @@ public class Main implements IGameBoardEventListener {
 		});
 	}
 
-	private ListController<IInputFile> createList(String directory, String packagePath, InputFilesFactory factory, InputFileType type) {
+	private ListController<IInputFile> createList(String directory, String packagePath, InputFilesFactory factory,
+			InputFileType type) {
 		try {
 			URL url = this.getClass().getResource(packagePath);
 			if (url != null) {
@@ -511,7 +525,9 @@ public class Main implements IGameBoardEventListener {
 
 	protected void fileExportTo(File file) {
 		if (file.exists()) {
-			int result = JOptionPane.showConfirmDialog(null, "The file " + file.getName() + " already exists. Would you like to overwrite it ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+			int result = JOptionPane.showConfirmDialog(null,
+					"The file " + file.getName() + " already exists. Would you like to overwrite it ?", "Confirmation",
+					JOptionPane.YES_NO_OPTION);
 			if (result != JOptionPane.YES_OPTION) {
 				return;
 			}
@@ -657,7 +673,8 @@ public class Main implements IGameBoardEventListener {
 		c.setLayout(new BorderLayout(10, 10));
 
 		consoleTextArea = new JTextArea(30, 80);
-		JScrollPane scrollPane = new JScrollPane(consoleTextArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		JScrollPane scrollPane = new JScrollPane(consoleTextArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		c.add(scrollPane, BorderLayout.CENTER);
 
 		consoleFrame.setType(Type.UTILITY);
@@ -686,6 +703,7 @@ public class Main implements IGameBoardEventListener {
 
 		addStatusBar(c);
 		addTrajectoriesPanel(c);
+		// addDataModelPanel(c);
 
 		c.add(centerPanel, BorderLayout.CENTER);
 
@@ -693,6 +711,150 @@ public class Main implements IGameBoardEventListener {
 
 		frame.pack();
 		frame.setVisible(true);
+	}
+
+	private void addDataModelPanel(Container c) {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		panel.setPreferredSize(new Dimension(300, 200));
+		c.add(panel, BorderLayout.LINE_START);
+
+		final ConfigurationTreeModel treeModel = new ConfigurationTreeModel();
+		final JTree tree = new JTree(treeModel);
+		tree.setRootVisible(false);
+		tree.setShowsRootHandles(true);
+
+		JScrollPane scrollPane = new JScrollPane(tree);
+		panel.add(scrollPane);
+
+		tree.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					TreePath path = tree.getSelectionPath();
+					ModelType type = treeModel.getNodeType(path);
+					String name = displayModelSelection(type);
+					if (name == null) {
+						return;
+					}
+					Object model;
+					if (name.startsWith("<")) {
+						model = createNew(type);
+					} else {
+						model = loadModel(type, name);
+					}
+					if (model == null) {
+						return;
+					}
+					Object node = path.getLastPathComponent();
+					treeModel.addToNode(node, model);
+
+					MatchModel match;
+					if (model instanceof MatchModel) {
+						match = (MatchModel) model;
+					} else {
+						match = treeModel.getMatch(path);
+					}
+					saveModel(match);
+				}
+			}
+		});
+	}
+
+	protected void saveModel(MatchModel match) {
+		ModelFactory factory = new ModelFactory();
+		try {
+			factory.save(match);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected Object loadModel(ModelType type, String name) {
+		ModelFactory factory = new ModelFactory();
+		try {
+			Object model = factory.load(type, name);
+			return model;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	protected Object createNew(ModelType type) {
+		String name = JOptionPane.showInputDialog("Name of the new element:");
+		Object element;
+		switch (type) {
+		case MATCH:
+			element = new MatchModel(name);
+			break;
+		case TRAJECTORY:
+			element = new TrajectoryModel(name);
+			break;
+		default:
+			element = null;
+			break;
+		}
+		return element;
+	}
+
+	protected String displayModelSelection(ModelType type) {
+		ArrayList<String> list = new ArrayList<>();
+		if (canCreate(type)) {
+			list.add("<create new...>");
+		}
+		String directory = getDirectoryName(type);
+		if (directory != null) {
+			File[] files = getFilesInDirectory(directory);
+			if (files != null) {
+				for (File file : files) {
+					String name = file.getName();
+					list.add(name);
+				}
+			}
+		}
+		if (list.isEmpty()) {
+			return null;
+		}
+		String[] values = list.toArray(new String[] {});
+		String selection = (String) JOptionPane.showInputDialog(null, "Select a file to load", "File selection",
+				JOptionPane.QUESTION_MESSAGE, null, values, values[0]);
+		return selection;
+	}
+
+	private boolean canCreate(ModelType type) {
+		if (type == null) {
+			return false;
+		}
+		switch (type) {
+		case MATCH:
+		case TRAJECTORY:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	private File[] getFilesInDirectory(String directory) {
+		File dir = new File(FileLocations.DATA, directory);
+		File[] files = dir.listFiles();
+		return files;
+	}
+
+	private String getDirectoryName(ModelType type) {
+		if (type == null) {
+			return null;
+		}
+		switch (type) {
+		case ROBOT:
+			return FileLocations.ROBOTS;
+		case MATCH:
+			return FileLocations.MATCHES;
+		case TRAJECTORY_ELEMENT:
+			return FileLocations.TRAJECTORIES;
+		default:
+			return null;
+		}
 	}
 
 	private void initServices() {
@@ -733,7 +895,8 @@ public class Main implements IGameBoardEventListener {
 				IGauge gauge = loadGauge(gaugeFile);
 				element.setGauge(gauge);
 
-				DisplayedTrajectory trajectory = new DisplayedTrajectory(pathFile, gaugeFile, (IGameBoardElement) element);
+				DisplayedTrajectory trajectory = new DisplayedTrajectory(pathFile, gaugeFile,
+						(IGameBoardElement) element);
 				addDisplayedTrajectory(trajectory);
 			}
 		} catch (Exception e) {
@@ -785,7 +948,8 @@ public class Main implements IGameBoardEventListener {
 			return;
 		}
 
-		DefaultListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController.getListModel();
+		DefaultListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController
+				.getListModel();
 		model.removeElement(trajectory);
 
 		IGameBoardElement element = trajectory.getElement();
@@ -808,7 +972,8 @@ public class Main implements IGameBoardEventListener {
 	}
 
 	private void save() {
-		ListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController.getListModel();
+		ListModel<DisplayedTrajectory> model = (DefaultListModel<DisplayedTrajectory>) elementsController
+				.getListModel();
 		String dir = System.getProperty("user.dir");
 		File file = new File(dir, WORKSPACE_TRAJECTORIES);
 		try (FileWriter fw = new FileWriter(file)) {
@@ -953,7 +1118,8 @@ public class Main implements IGameBoardEventListener {
 		try {
 			final WatchService watcher = FileSystems.getDefault().newWatchService();
 			final Path path = directory.toPath();
-			path.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
+			path.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_CREATE,
+					StandardWatchEventKinds.ENTRY_DELETE);
 
 			Timer timer = new Timer();
 			TimerTask task = new TimerTask() {

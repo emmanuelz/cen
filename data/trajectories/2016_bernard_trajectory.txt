@@ -1,0 +1,74 @@
+// Chaque ligne représente un mouvement
+// Paramètres :
+//   - t : type de trajectoire
+//   - x;y : coordonnées x;y du point de destination en mm
+//   - o : angle de l'orientation en degrés
+//   - vl : vitesse linéaire en mm/s
+//   - va : vitesse angulaire en tour/s
+//   - cx1;cy1, ..., cxn;cyn: coordonnées x;y du n-ième point de contrôle en mm
+//   - ta : temps additionnel en fin de mouvement en s (correspond à la durée d'une action, d'un temps d'attente, etc.) 
+// Unités : distances en mm, temps en s, angles en degrés
+// Axes : x = largeur, y = longueur, repère direct (angle 0° correspond au sens des x croissants, 90° au sens des y croissants)
+// Types de trajectoires :
+//   - t : transformation affine : sx;tx;sy;ty;sa;ta
+//   - i : positionnement et angle initiaux, vitesses par défaut : t;x;y;o;vl;va;ta
+//   - s : segment : t;x;y;vl;va;ta
+//   - b : courbe de Bézier quadratique : t;x;y;cx1;cy1;cx2;cy2;vl;va;ta
+//   - d : distance droite : distance
+//   - r : rotation sur place : angle
+//   - o : rotation orientée sur place : orientation finale;sens (+/- 1)
+
+// plan 1 : démarrage avec gabarit : au bout de la zone
+//i;750;170;90;300;0,25;0
+
+// plan 2 : démarrage sans gabarit appuyé contre la bordure
+i;750;113;90;300;0,25;0
+d;57
+
+r;15
+d;1376
+r;75
+d;190
+// prise du chateau
+d;-300;-300;10;0
+r;90
+d;300
+r;90
+d;190
+// dépose du chateau
+d;-415;-300;10;0
+r;90
+d;-300;-300;10;0
+// prise des cubes
+d;80
+r;-135
+d;500
+r;45
+d;600
+r;90
+d;600
+// dépose des cubes
+r;-75
+d;250
+r;65
+d;220
+r;20
+d;500
+r;35
+d;400
+r;45
+d;500
+r;45
+d;500
+r;45
+d;-200;-300;10;0
+// prise des cubes adverses
+d;100
+r;14
+d;1400
+r;76
+d;500
+r;90
+d;500
+// dépose des cubes adverses
+// fin des actions
