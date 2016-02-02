@@ -16,7 +16,10 @@ public class StraightLine extends AbstractTrajectoryPath {
 	private static final String KEY_ANGLE = "angle";
 	private static final String KEY_DELAY = "delay";
 	private static final String KEY_DISTANCE = "distance";
+	private static final String KEY_POSITION_X = "positionX";
+	private static final String KEY_POSITION_Y = "positionY";
 	private static final String KEY_NXT = "nxt";
+	private static final String KEY_XY = "xy";
 	private static final String KEY_ORIENTATION = "orientation";
 	private static final String KEY_PAUSE = "pause";
 	private static final String KEY_POSTCOMMENTS = "postComments";
@@ -27,6 +30,7 @@ public class StraightLine extends AbstractTrajectoryPath {
 	private KeyFrame keyFrame;
 
 	private Path2D path;
+	private boolean absolutePosition = false;
 
 	public StraightLine(String name, double initialAngle, double finalAngle, ArrayList<KeyFrame> frames) {
 		super(name, new Point2D.Double(), null, null, initialAngle, finalAngle);
@@ -177,7 +181,8 @@ public class StraightLine extends AbstractTrajectoryPath {
 		double lastOrientation = 0;
 		double lastTimestamp = 0;
 		Map<String, String> params = new HashMap<String, String>();
-		for (KeyFrame frame : frames) {
+		for (int i = 0; i < frames.size(); i++) {
+			KeyFrame frame = frames.get(i);
 			writeLine(sb, frame);
 			if (frame.hasComments()) {
 				ArrayList<String> comments = frame.getComments();
@@ -202,13 +207,20 @@ public class StraightLine extends AbstractTrajectoryPath {
 				double distance = p.distance(last);
 				double speed = frame.getMovementSpeed();
 				String direction = speed > 0 ? "forward" : "backward";
-				addComments(params, String.format("// move %s of %.0f mm (%.0f)", direction, distance, 9.557 * distance * Math.signum(speed)), true);
-				addValue(params, KEY_DISTANCE, 9.557 * distance * Math.signum(speed));
+				if (absolutePosition) {
+					addComments(params, String.format("// move to x=%.0f mm, y=%.0f mm", p.getX(), p.getY()), true);
+					addValue(params, KEY_POSITION_X, p.getX());
+					addValue(params, KEY_POSITION_Y, p.getY());
+				} else {
+					addComments(params, String.format("// move %s of %.0f mm (%.0f)", direction, distance, 9.557 * distance * Math.signum(speed)), true);
+					addValue(params, KEY_DISTANCE, 9.557 * distance * Math.signum(speed));
+				}
 				last = p;
 				break;
 			case NONE:
 				// double delay = frame.getTimestamp() - lastTimestamp;
-				// addComments(params, String.format("delay_ms(%.0f);", delay * 1000), true);
+				// addComments(params, String.format("delay_ms(%.0f);", delay *
+				// 1000), true);
 				break;
 			case ROTATION:
 				double o = frame.getOrientation();
@@ -218,12 +230,14 @@ public class StraightLine extends AbstractTrajectoryPath {
 					angle = frame.getRelativeAngle();
 				}
 				angle = Math.toDegrees(angle);
-				addComments(params, String.format("// rotation of %.0f° (%.0f)", angle, 22527.5d / 360d * angle), true);
-				addValue(params, KEY_ANGLE, 22527.5d / 360d * angle);
-				if (params.containsKey(KEY_ORIENTATION)) {
-					double opposite = getDoubleValue(params, KEY_ORIENTATION);
-					opposite = Math.toDegrees(opposite);
-					addValue(params, KEY_ORIENTATION, 22527.5d / 360d * opposite);
+				if (!absolutePosition || !isLine(i + 1)) {
+					addComments(params, String.format("// rotation of %.0f° (%.0f)", angle, 22527.5d / 360d * angle), true);
+					addValue(params, KEY_ANGLE, 22527.5d / 360d * angle);
+					if (params.containsKey(KEY_ORIENTATION)) {
+						double opposite = getDoubleValue(params, KEY_ORIENTATION);
+						opposite = Math.toDegrees(opposite);
+						addValue(params, KEY_ORIENTATION, 22527.5d / 360d * opposite);
+					}
 				}
 				lastOrientation = o;
 				break;
@@ -234,6 +248,15 @@ public class StraightLine extends AbstractTrajectoryPath {
 			writeCommands(sb, params);
 		}
 		return sb.toString();
+	}
+
+	private boolean isLine(int i) {
+		if (i >= frames.size()) {
+			return false;
+		}
+		KeyFrame frame = frames.get(i);
+		boolean line = frame.getMovement() == TrajectoryMovement.LINE;
+		return line;
 	}
 
 	@Override
@@ -295,6 +318,17 @@ public class StraightLine extends AbstractTrajectoryPath {
 			clear(params, KEY_DISTANCE);
 			clear(params, KEY_NXT);
 			clear(params, KEY_DELAY);
+		} else if (params.containsKey(KEY_POSITION_X) && params.containsKey(KEY_POSITION_Y)) {
+			String x = params.get(KEY_POSITION_X);
+			String y = params.get(KEY_POSITION_Y);
+			sb.append(String.format("FCM_atteindreXI_mm(%s, %s);\r\n", x, y));
+			clear(params, KEY_POSITION_X);
+			clear(params, KEY_POSITION_Y);
+		}
+		if (params.containsKey(KEY_XY)) {
+			String s = params.get(KEY_XY);
+			absolutePosition = s.equals("true");
+			clear(params, KEY_XY);
 		}
 		if (params.containsKey(KEY_PAUSE)) {
 			String v = params.get(KEY_PAUSE);
