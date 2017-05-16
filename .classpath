@@ -7,5 +7,20 @@
 	<classpathentry kind="lib" path="lib/org.eclipse.paho.client.mqttv3-1.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/rxtx-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/rxtx-native-windows.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.6.4.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/Robot/lib/jackson-databind-2.6.4-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jackson-core-2.6.4.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/Robot/lib/jackson-core-2.6.4-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.6.4.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/Robot/lib/jackson-annotations-2.6.4-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

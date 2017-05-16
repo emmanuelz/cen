@@ -12,11 +12,25 @@ public interface ITrajectoryPath {
 	public static final String KEY_DESCRIPTION = "description";
 
 	/**
+	 * Returns the timestamp of the ending position of this trajectory.
+	 * 
+	 * @return the timestamp of the ending position of this trajectory
+	 */
+	public double getEndTimestamp();
+
+	/**
 	 * Returns the interface representing the gauge of the object used to render the footprint of the trajectory.
 	 * 
 	 * @return the gauge of the object which this trajectory is related to
 	 */
 	public IGauge getGauge();
+
+	/**
+	 * Returns the orientation of the robot at the given timestamp
+	 * 
+	 * @return the orientation of the robot at the given timestamp in radians
+	 */
+	public double getOrientation(double timestamp);
 
 	/**
 	 * Returns the path object representing the trajectory.
@@ -26,11 +40,13 @@ public interface ITrajectoryPath {
 	public Shape getPath();
 
 	/**
-	 * Returns the position of the element on the gameboard.
+	 * Returns the position of the robot on the gameboard.
 	 * 
-	 * @return the position of the element on the gameboard
+	 * @param timestamp
+	 *            the timestamp
+	 * @return the position of the robot on the gameboard
 	 */
-	public Point2D getPosition();
+	public Point2D getPosition(double timestamp);
 
 	/**
 	 * Returns the value of a property given its name.
@@ -54,6 +70,15 @@ public interface ITrajectoryPath {
 	 * @return the orientation of the robot when starting the trajectory in radians
 	 */
 	public double getRobotInitialAngle();
+
+	/**
+	 * Returns the timestamp of the starting position of this trajectory.
+	 * 
+	 * @param timestamp
+	 *            the timestamp
+	 * @return the timestamp of the starting position of this trajectory
+	 */
+	public double getStartTimestamp();
 
 	/**
 	 * Returns the control points of the trajectory if any.

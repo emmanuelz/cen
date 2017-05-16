@@ -27,9 +27,15 @@ public class RALColor {
 	// Traffic red
 	public static final Color RAL_3020 = new Color(204, 6, 5);
 
+	// squirrel grey
+	public static final Color RAL_7000 = new Color(120, 133, 139);
+
 	// Pebble grey
 	public static final Color RAL_7032 = new Color(184, 183, 153);
 
 	// Sky Blue
 	public static final Color RAL_5015 = new Color(23, 97, 171);
+
+	// Traffic White
+	public static final Color RAL_9016 = new Color(246, 246, 246);
 }

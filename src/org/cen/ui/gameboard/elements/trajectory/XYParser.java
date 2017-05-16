@@ -20,9 +20,7 @@ public class XYParser extends AbstractTrajectoryParser {
 	}
 
 	private static final String KEY_ORIENTATION = "orientation";
-
 	private static final Object KEY_PAUSE = "pause";
-
 	private static final double MIN_ANGLE = Math.toRadians(0.5);
 	private static final double MIN_DISTANCE = 0.1;
 	private double angleScale = 1;
@@ -62,7 +60,7 @@ public class XYParser extends AbstractTrajectoryParser {
 
 	@Override
 	public ITrajectoryPath getPath(String name) {
-		ITrajectoryPath path = new StraightLine(name, initialAngle, finalAngle, frames);
+		ITrajectoryPath path = new TrajectoryPathElement(name, initialAngle, finalAngle, frames);
 		return path;
 	}
 
@@ -295,12 +293,20 @@ public class XYParser extends AbstractTrajectoryParser {
 			case 'p':
 				parsePause(s);
 				break;
+			case 'a':
+				parseActuator(s);
+				break;
 			default:
-				throw new ParseException("unexpected value: " + type, 0);
+				System.out.println("unexpected value: " + type);
+				break;
 			}
 		} finally {
 			s.close();
 		}
+	}
+
+	private void parseActuator(Scanner s) {
+		// TODO
 	}
 
 	private void parseOrientation(Scanner s) {

@@ -87,4 +87,16 @@ public class BezierCurve extends AbstractTrajectoryPath {
 	public void paintUnscaled(Graphics2D g, double timestamp) {
 		paintUnscaled(g);
 	}
+
+	@Override
+	public double getEndTimestamp() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getStartTimestamp() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

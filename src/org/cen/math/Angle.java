@@ -15,11 +15,11 @@ public class Angle {
 	public static double getRotationAngle(double start, double end) {
 		double theta = end - start;
 		if (theta > Math.PI) {
-			theta += -PI2;
+			theta -= PI2;
 		} else if (theta < -Math.PI) {
 			theta += PI2;
 		}
-		theta %= 2.0 * Math.PI;
+		theta %= PI2;
 		return theta;
 	}
 }

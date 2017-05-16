@@ -1,0 +1,69 @@
+﻿// Chaque ligne représente un mouvement
+// Paramètres :
+//   - t : type de trajectoire
+//   - x;y : coordonnées x;y du point de destination en mm
+//   - o : angle de l'orientation en degrés
+//   - vl : vitesse linéaire en mm/s
+//   - va : vitesse angulaire en tour/s
+//   - cx1;cy1, ..., cxn;cyn: coordonnées x;y du n-ième point de contrôle en mm
+//   - ta : temps additionnel en fin de mouvement en s (correspond à la durée d'une action, d'un temps d'attente, etc.) 
+// Unités : distances en mm, temps en s, angles en degrés
+// Axes : x = largeur, y = longueur, repère direct (angle 0° correspond au sens des x croissants, 90° au sens des y croissants)
+// Types de trajectoires :
+//   - t : transformation affine : sx;tx;sy;ty;sa;ta
+//   - i : positionnement et angle initiaux, vitesses par défaut : t;x;y;o;vl;va;ta
+//   - s : segment : t;x;y;vl;va;ta
+//   - b : courbe de Bézier quadratique : t;x;y;cx1;cy1;cx2;cy2;vl;va;ta
+//   - d : distance droite : distance
+//   - r : rotation sur place : angle
+//   - o : rotation orientée sur place : orientation finale;sens (+/- 1)
+
+i;135;945;0;200;0,1;0
+d;105
+r;-9
+// test turbine
+c;FCM_XCall_envoyer_ordre_NXT(4);
+c;FCM_XCall_attendre_tirette();
+
+// début décompte 90s
+c;FCM_XCall_envoyer_ordre_NXT(2);
+
+// vers le cratère
+s;540;900
+s;540;870
+
+// ramassage
+c;FCM_XCall_envoyer_ordre_NXT(1);
+r;10
+r;-20
+r;10
+p;1
+
+s;540;975;-200
+
+s;800;975
+s;800;550
+s;540;250
+s;500;250
+
+// dépose
+c;FCM_XCall_envoyer_ordre_NXT(3);
+p;5
+
+s;540;250;-200
+s;540;430
+
+// ramassage
+c;FCM_XCall_envoyer_ordre_NXT(1);
+r;10
+r;-20
+r;10
+p;1
+
+s;540;250;-200
+s;500;250
+
+// vidage
+c;FCM_XCall_envoyer_ordre_NXT(3);
+p;5
+c;FCM_XCall_envoyer_ordre_NXT(0);

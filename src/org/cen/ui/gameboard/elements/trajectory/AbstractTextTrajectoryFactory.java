@@ -10,7 +10,7 @@ public abstract class AbstractTextTrajectoryFactory extends AbstractTrajectoryFa
 		AbstractTrajectoryParser parser = createParser();
 		Scanner scanner = new Scanner(stream);
 		try {
-			scanner.useDelimiter("\r\n?");
+			scanner.useDelimiter("\r?\n");
 			while (scanner.hasNext()) {
 				String line = scanner.next();
 				try {

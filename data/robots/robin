@@ -1,0 +1,18 @@
+{
+   "actuators":{
+      "engine":{
+         "name":"axe des roues",
+         "states":{
+            "default":{
+               "name":"centre",
+               "position":{
+                  "orientation":0.0,
+                  "x":0.0,
+                  "y":0.0
+               }
+            }
+         }
+      }
+   },
+   "name":"robin"
+}
